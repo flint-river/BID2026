@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre-Bid Polish Bid 2026-2027</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #1a1a2e; 
+            color: #eee; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 2px solid #0f3460;
+            flex-shrink: 0;
+        }
+        .header h1 { color: #e94560; font-size: 1.5em; }
+        .header p { color: #888; margin-top: 3px; font-size: 12px; }
+        
+        .status-bar {
+            background: #0f3460;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .status-bar .stats { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        .stat { display: flex; align-items: center; gap: 5px; }
+        .stat-label { color: #888; }
+        .stat-value { color: #4ecca3; font-weight: bold; }
+        .stat-value.available { color: #e94560; }
+        
+        .mode-indicator {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .mode-indicator.admin { background: #e94560; color: white; }
+        .mode-indicator.viewer { background: #4ecca3; color: #1a1a2e; }
+        
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #888;
+            font-size: 11px;
+        }
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ecca3;
+        }
+        .sync-dot.syncing { background: #f0a500; animation: pulse 1s infinite; }
+        .sync-dot.error { background: #e94560; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* Main scrollable area */
+        .main-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 15px;
+        }
+        
+        /* Side by side layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 15px;
+            min-height: min-content;
+        }
+        
+        /* Panel Styles */
+        .panel {
+            background: #16213e;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .panel-header {
+            background: #0f3460;
+            padding: 10px 15px;
+            color: #e94560;
+            font-weight: bold;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .panel-content {
+            padding: 10px;
+        }
+        
+        /* Seniority Entry Styles - Simplified */
+        .group-title {
+            color: #4ecca3;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 8px 5px 5px 5px;
+            border-top: 1px solid #0f3460;
+            margin-top: 10px;
+        }
+        .group-title:first-child { border-top: none; margin-top: 0; }
+        
+        .entry-header {
+            display: grid;
+            grid-template-columns: 35px 1fr 55px;
+            gap: 8px;
+            padding: 6px 8px;
+            background: #0f3460;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 11px;
+            color: #4ecca3;
+            font-weight: bold;
+        }
+        
+        .seniority-entry {
+            display: grid;
+            grid-template-columns: 35px 1fr 55px;
+            gap: 8px;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 5px;
+            margin-bottom: 3px;
+            background: #1a1a2e;
+            font-size: 12px;
+        }
+        .seniority-entry:hover { background: #0f3460; }
+        .seniority-entry.assigned { background: rgba(78,204,163,0.2); }
+        
+        .sen-nbr {
+            color: #888;
+            font-weight: bold;
+            text-align: center;
+        }
+        .sen-name {
+            color: #eee;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sen-input {
+            width: 50px;
+            padding: 5px;
+            border: 2px solid #0f3460;
+            border-radius: 4px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 13px;
+            text-align: center;
+        }
+        .sen-input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .sen-input.filled {
+            border-color: #4ecca3;
+            background: rgba(78,204,163,0.15);
+            color: #4ecca3;
+            font-weight: bold;
+        }
+        .sen-input:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .sen-line-display {
+            width: 50px;
+            padding: 5px;
+            border: 2px solid #0f3460;
+            border-radius: 4px;
+            background: #1a1a2e;
+            color: #4ecca3;
+            font-size: 13px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .sen-line-display.empty {
+            color: #555;
+        }
+        
+        /* All Lines Styles */
+        .lines-header {
+            display: grid;
+            grid-template-columns: 45px 80px 80px repeat(12, 1fr);
+            gap: 4px;
+            padding: 6px 5px;
+            background: #0f3460;
+            border-radius: 5px;
+            margin-bottom: 3px;
+            font-size: 10px;
+            color: #4ecca3;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .lines-holiday-subheader {
+            display: grid;
+            grid-template-columns: 45px 80px 80px repeat(12, 1fr);
+            gap: 4px;
+            padding: 2px 5px;
+            font-size: 8px;
+            color: #e94560;
+            text-align: center;
+        }
+        .lines-holiday-subheader .spacer { grid-column: span 3; }
+        
+        .line-row {
+            display: grid;
+            grid-template-columns: 45px 80px 80px repeat(12, 1fr);
+            gap: 4px;
+            align-items: center;
+            padding: 5px;
+            border-radius: 5px;
+            margin-bottom: 2px;
+            background: #1a1a2e;
+            font-size: 11px;
+        }
+        .line-row:hover { background: #0f3460; }
+        .line-row.taken { background: rgba(78,204,163,0.15); }
+        
+        .line-nbr {
+            color: #4ecca3;
+            font-weight: bold;
+            text-align: center;
+        }
+        .line-desc {
+            color: #eee;
+            font-size: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .line-bidder {
+            font-size: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .line-bidder.taken { color: #f0a500; font-weight: bold; }
+        .line-bidder.available { color: #555; font-style: italic; }
+        
+        .day-cell {
+            text-align: center;
+            font-size: 9px;
+            color: #ccc;
+            padding: 3px 2px;
+            background: #1e3a5f;
+            border-radius: 3px;
+        }
+        .day-cell.off {
+            color: #4ecca3;
+            background: rgba(78,204,163,0.3);
+            font-weight: bold;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #16213e;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        .btn {
+            padding: 6px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #e94560; color: white; }
+        .btn-primary:hover { background: #ff6b6b; }
+        .btn-secondary { background: #0f3460; color: #eee; }
+        .btn-secondary:hover { background: #2a3f5f; }
+        .btn-legend { background: #4ecca3; color: #1a1a2e; }
+        .btn-admin { background: #f0a500; color: #1a1a2e; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal h3 { color: #e94560; margin-bottom: 15px; }
+        .modal-close {
+            float: right;
+            background: #e94560;
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .legend-section h4 { color: #4ecca3; margin-bottom: 10px; font-size: 13px; }
+        .legend-item {
+            display: flex;
+            gap: 10px;
+            padding: 5px 0;
+            font-size: 12px;
+            border-bottom: 1px solid #0f3460;
+        }
+        .legend-item:last-child { border-bottom: none; }
+        .legend-code { color: #4ecca3; font-weight: bold; min-width: 100px; }
+        
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            .main-wrapper {
+                overflow-x: auto;
+            }
+            
+            .main-container {
+                min-width: 900px;
+            }
+            
+            .header h1 { font-size: 1.2em; }
+            .header p { font-size: 10px; }
+            .header a { font-size: 12px !important; padding: 8px 15px !important; }
+            
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .status-bar .stats {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+            
+            .footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .footer > div {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+        }
+        
+        @media (max-width: 500px) {
+            .header h1 { font-size: 1em; }
+            .header a { font-size: 11px !important; padding: 6px 12px !important; margin-top: 8px !important; }
+            
+            .status-bar .stats {
+                gap: 5px;
+                font-size: 10px;
+            }
+            .status-bar .stats span[style*="margin"] {
+                margin-left: 8px !important;
+                margin-right: 3px !important;
+            }
+            
+            .mode-indicator {
+                padding: 3px 8px;
+                font-size: 9px;
+            }
+            
+            .btn {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+            
+            .btn-legend {
+                padding: 4px 8px;
+                font-size: 9px;
+            }
+            
+            .modal {
+                margin: 10px;
+                padding: 15px;
+                max-height: 90vh;
+            }
+            
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .password-modal {
+                width: 90%;
+                padding: 20px;
+            }
+        }
+        
+        /* Password Modal */
+        .password-modal {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 30px;
+            width: 350px;
+            text-align: center;
+        }
+        .password-modal h3 { color: #e94560; margin-bottom: 20px; }
+        .password-modal input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .password-modal input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .password-error {
+            color: #e94560;
+            font-size: 12px;
+            margin-bottom: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Pre-Bid Polish Bid 2026-2027</h1>
+        <p>Bid Year: April 1, 2026 - March 31, 2027 | 12-Day Rotating Pattern</p>
+        <a href="https://deltaairlines-my.sharepoint.com/:x:/r/personal/chris_pawlowski_delta_com/Documents/EXCEL%20WORK%20IN%20PROGRESS/Schedules/The%20Polish%20Bid%20Package%20%202026-2027%20(Version%201.0).xlsx?d=w684f4f1bfadd4986abedb12c8c97d2d8&csf=1&web=1&e=Op63a7" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:12px; padding:10px 20px; background:#217346; color:white; font-size:14px; font-weight:bold; text-decoration:none; border-radius:6px;">📊 Open Excel Spreadsheet (Microsoft 365)</a>
+    </div>
+    
+    <div class="status-bar">
+        <div class="stats">
+            <span style="color:#e94560; font-weight:bold; margin-right:5px;">SSOM:</span>
+            <div class="stat">
+                <span class="stat-label">Taken:</span>
+                <span class="stat-value" id="statTakenSSOM">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Avail:</span>
+                <span class="stat-value available" id="statAvailSSOM">14</span>
+            </div>
+            <span style="color:#e94560; font-weight:bold; margin-left:15px; margin-right:5px;">SOM:</span>
+            <div class="stat">
+                <span class="stat-label">Taken:</span>
+                <span class="stat-value" id="statTakenSOM">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Avail:</span>
+                <span class="stat-value available" id="statAvailSOM">82</span>
+            </div>
+            <button class="btn btn-legend" onclick="showLegend()">Legend</button>
+            <span class="mode-indicator viewer" id="modeIndicator">VIEWER</span>
+        </div>
+        <div class="sync-status">
+            <div class="sync-dot" id="syncDot"></div>
+            <span id="syncText">Connecting...</span>
+        </div>
+    </div>
+    
+    <div class="main-wrapper">
+        <div class="main-container">
+            <!-- Left Panel: Seniority Lists - Simplified -->
+            <div class="panel">
+                <div class="panel-header">Seniority List</div>
+                <div class="panel-content" id="seniorityPanel">
+                    <div class="entry-header">
+                        <span>#</span>
+                        <span>Name</span>
+                        <span>Line</span>
+                    </div>
+                    <div class="group-title">SSOM (14)</div>
+                    <div id="group1List"></div>
+                    <div class="group-title">SOM (82)</div>
+                    <div id="group2List"></div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: All Lines -->
+            <div class="panel">
+                <div class="panel-header">All Lines</div>
+                <div class="panel-content" id="linesPanel">
+                    <div class="lines-holiday-subheader">
+                        <span class="spacer"></span>
+                        <span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="lines-holiday-subheader">
+                        <span class="spacer"></span>
+                        <span></span><span></span><span></span><span>LABOR</span>
+                        <span>XMAS</span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span>NYD</span>
+                    </div>
+                    <div class="lines-holiday-subheader">
+                        <span class="spacer"></span>
+                        <span>SUPER</span><span>EAST2</span><span>STPAT</span><span>MOM</span>
+                        <span>EAST1</span><span></span><span>MEMOR</span><span></span>
+                        <span></span><span>DAD</span><span>4TH</span><span>THX</span>
+                    </div>
+                    <div class="lines-header">
+                        <span>Line</span>
+                        <span>Desc</span>
+                        <span>Bidder</span>
+                        <span>1</span><span>2</span><span>3</span><span>4</span>
+                        <span>5</span><span>6</span><span>7</span><span>8</span>
+                        <span>9</span><span>10</span><span>11</span><span>12</span>
+                    </div>
+                    <div id="allLinesList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div>
+            <button class="btn btn-primary" onclick="exportData()">Export Backup</button>
+            <button class="btn btn-secondary" onclick="importData()" id="importBtn" disabled>Import Backup</button>
+            <button class="btn btn-secondary" onclick="clearAll()" id="clearBtn" disabled>Clear All</button>
+        </div>
+        <div>
+            <button class="btn btn-admin" onclick="showPasswordModal()" id="adminBtn">Admin Login</button>
+        </div>
+    </div>
+    
+    <!-- Password Modal -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="password-modal">
+            <h3>🔐 Admin Login</h3>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">Enter password to enable editing</p>
+            <input type="password" id="passwordInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()">
+            <div class="password-error" id="passwordError">Incorrect password</div>
+            <button class="btn btn-primary" onclick="checkPassword()" style="width:100%; padding:12px;">Login</button>
+            <button class="btn btn-secondary" onclick="hidePasswordModal()" style="width:100%; padding:12px; margin-top:10px;">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Legend Modal -->
+    <div class="modal-overlay" id="legendModal" onclick="hideLegend()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="hideLegend()">Close</button>
+            <h3>Legend</h3>
+            <div class="legend-grid">
+                <div class="legend-section">
+                    <h4>Bridge Desks</h4>
+                    <div class="legend-item"><span class="legend-code">N</span><span>321NEO</span></div>
+                    <div class="legend-item"><span class="legend-code">O</span><span>717*</span></div>
+                    <div class="legend-item"><span class="legend-code">Q</span><span>B738/B73R/B73J</span></div>
+                    <div class="legend-item"><span class="legend-code">R</span><span>A220</span></div>
+                    <div class="legend-item"><span class="legend-code">S</span><span>B739</span></div>
+                    <div class="legend-item"><span class="legend-code">U</span><span>B763/764</span></div>
+                    <div class="legend-item"><span class="legend-code">V</span><span>A321</span></div>
+                    <div class="legend-item"><span class="legend-code">W</span><span>B757</span></div>
+                    <div class="legend-item"><span class="legend-code">X</span><span>A319/A320</span></div>
+                    <div class="legend-item"><span class="legend-code">Y</span><span>A330/A350</span></div>
+                </div>
+                <div class="legend-section">
+                    <h4>SPT Desks</h4>
+                    <div class="legend-item"><span class="legend-code">C/D/E</span><span>Terminal</span></div>
+                    <div class="legend-item"><span class="legend-code">F</span><span>Routes</span></div>
+                    <div class="legend-item"><span class="legend-code">G</span><span>Enroute</span></div>
+                    <div class="legend-item"><span class="legend-code">H</span><span>Surface</span></div>
+                    <div class="legend-item"><span class="legend-code">J/K</span><span>Regional</span></div>
+                </div>
+                <div class="legend-section">
+                    <h4>SSOM Desks</h4>
+                    <div class="legend-item"><span class="legend-code">A/B</span><span>SSOM SPT</span></div>
+                    <div class="legend-item"><span class="legend-code">M/Z</span><span>SSOM Bridge</span></div>
+                </div>
+                <div class="legend-section">
+                    <h4>2026-2027 Holidays</h4>
+                    <div class="legend-item"><span class="legend-code">Pattern day 1</span><span>Super Bowl</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 2</span><span>Easter 2</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 3</span><span>St. Patrick's</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 4</span><span>Labor, Mom</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 5</span><span>Xmas, Easter 1</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 7</span><span>Memorial</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 10</span><span>Father's Day</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 11</span><span>July 4th</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 12</span><span>NYD, Thanksgiving</span></div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #0f3460; font-size: 11px; color: #888;">
+                * May receive other fleets depending on daily workload of other desks
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    // Configuration
+    const JSONBIN_API_KEY = '$2a$10$rh6dVlVr8LIP/8wz.FWTxeDFZHOjz3k.mOmyMwJzuPtOLKIBze1uS';
+    const ADMIN_PASSWORD = 'Poiuytrewq2357#';
+    let BIN_ID = localStorage.getItem('polish_bid_bin_id') || null;
+    
+    // Data
+    const GROUP1 = [{"nbr": 1, "name": "Cost, Bob"}, {"nbr": 2, "name": "Bret, Ken"}, {"nbr": 3, "name": "Astl, Joe"}, {"nbr": 4, "name": "Pawl, Chr"}, {"nbr": 5, "name": "Belf, Vin"}, {"nbr": 6, "name": "John, Bri"}, {"nbr": 7, "name": "Smit, Dav"}, {"nbr": 8, "name": "Camp, Kev"}, {"nbr": 9, "name": "Reck, Jas"}, {"nbr": 10, "name": "Dona, Jef"}, {"nbr": 11, "name": "Adam, Mar"}, {"nbr": 12, "name": "Scha, Dav"}, {"nbr": 13, "name": "Emer, Jes"}, {"nbr": 14, "name": "Graf, Ben"}];
+    const GROUP2 = [{"nbr": 1, "name": "Bird, Dan"}, {"nbr": 2, "name": "Fran, Dav"}, {"nbr": 3, "name": "Char, Car"}, {"nbr": 4, "name": "Spra, Per"}, {"nbr": 5, "name": "Olse, Ed"}, {"nbr": 6, "name": "Harr, Jim"}, {"nbr": 7, "name": "Bail, Ric"}, {"nbr": 8, "name": "Clar, Jud"}, {"nbr": 9, "name": "Gwin, Bri"}, {"nbr": 10, "name": "Dani, Jef"}, {"nbr": 11, "name": "Smit, Bar"}, {"nbr": 12, "name": "Riel, Wal"}, {"nbr": 13, "name": "Rohl, Mik"}, {"nbr": 14, "name": "Houc, Dav"}, {"nbr": 15, "name": "Stan, Lan"}, {"nbr": 16, "name": "Hobs, Mar"}, {"nbr": 17, "name": "Hoff, Dan"}, {"nbr": 18, "name": "Bake, Eri"}, {"nbr": 19, "name": "Pusz, Jim"}, {"nbr": 20, "name": "Hara, Dud"}, {"nbr": 21, "name": "Batt, Jai"}, {"nbr": 22, "name": "Such, Chr"}, {"nbr": 23, "name": "Vogt, Dav"}, {"nbr": 24, "name": "Hurl, Jac"}, {"nbr": 25, "name": "McEl, Kev"}, {"nbr": 26, "name": "Reed, Mik"}, {"nbr": 27, "name": "Fuji, Rox"}, {"nbr": 28, "name": "O'Do, Bri"}, {"nbr": 29, "name": "Hami, Ada"}, {"nbr": 30, "name": "Geig, Geo"}, {"nbr": 31, "name": "O'Do, Wen"}, {"nbr": 32, "name": "Este, Kat"}, {"nbr": 33, "name": "Rine, Ral"}, {"nbr": 34, "name": "Roma, Ken"}, {"nbr": 35, "name": "Hall, Cha"}, {"nbr": 36, "name": "Long, And"}, {"nbr": 37, "name": "Papp, Rob"}, {"nbr": 38, "name": "Gagn, Jul"}, {"nbr": 39, "name": "Male, Tod"}, {"nbr": 40, "name": "Misn, Huo"}, {"nbr": 41, "name": "O'Br, Dav"}, {"nbr": 42, "name": "DeLa, Wil"}, {"nbr": 43, "name": "Betc, Mic"}, {"nbr": 44, "name": "Joll, Dav"}, {"nbr": 45, "name": "Tozz, Gin"}, {"nbr": 46, "name": "McMo, Sha"}, {"nbr": 47, "name": "Ruck, Ric"}, {"nbr": 48, "name": "Warn, Dee"}, {"nbr": 49, "name": "Hene, And"}, {"nbr": 50, "name": "Osoj, Mer"}, {"nbr": 51, "name": "Fole, Rya"}, {"nbr": 52, "name": "Hill, Sea"}, {"nbr": 53, "name": "Muge, Jen"}, {"nbr": 54, "name": "Denm, Joh"}, {"nbr": 55, "name": "Maki, Rya"}, {"nbr": 56, "name": "McGr, Dea"}, {"nbr": 57, "name": "Brad, Lat"}, {"nbr": 58, "name": "Hatl, Her"}, {"nbr": 59, "name": "Haye, Joh"}, {"nbr": 60, "name": "Harr, Ele"}, {"nbr": 61, "name": "Piot, Mar"}, {"nbr": 62, "name": "Yage, Lar"}, {"nbr": 63, "name": "Cart, Wes"}, {"nbr": 64, "name": "Gaul, Pet"}, {"nbr": 65, "name": "Bost, Gre"}, {"nbr": 66, "name": "Hint, Sel"}, {"nbr": 67, "name": "Tjad, And"}, {"nbr": 68, "name": "Geur, Ste"}, {"nbr": 69, "name": "Kent, And"}, {"nbr": 70, "name": "Samu, Cha"}, {"nbr": 71, "name": "Corn, Dan"}, {"nbr": 72, "name": "Fatt, Kel"}, {"nbr": 73, "name": "Star, Jim"}, {"nbr": 74, "name": "Alle, Jos"}, {"nbr": 75, "name": "Latt, Wil"}, {"nbr": 76, "name": "Turi, Lau"}, {"nbr": 77, "name": "Aust, Ste"}, {"nbr": 78, "name": "Rain, Mik"}, {"nbr": 79, "name": "Mill, Cra"}, {"nbr": 80, "name": "Litt, Cla"}, {"nbr": 81, "name": "Pier, Mar"}, {"nbr": 82, "name": "Harn, Zac"}];
+    const ANNUAL_BID = {"headers": ["", "NBR", "LINE", "NAME", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, "", "NBR", "NAME", "LINE", "FC DOH", "DL DOH", "DOB", "BID TIME"], "rows": [["", "1", "1 SSOM", "", "--", "--", "E05A", "E05A", "E05A", "--", "--", "--", "E05A", "E05A", "--", "--", "", "1", "COST, BOB", "", "1984-08-11 00:00:00", "1983-04-18 00:00:00", "1957-07-09 00:00:00", "2026-01-06 05:00:00"], ["", "2", "2 SSOM", "", "E05A", "E05A", "--", "--", "--", "E05A", "E05A", "E05A", "--", "--", "--", "--", "", "2", "BRET, KEN", "", "1986-06-17 00:00:00", "1986-06-17 00:00:00", "1960-12-14 00:00:00", "2026-01-06 05:10:00"], ["", "3", "3 SSOM", "", "--", "--", "A06M", "A06M", "A06M", "--", "--", "--", "A06M", "A06M", "--", "--", "", "3", "ASTL, JOE", "", "1990-01-22 00:00:00", "1990-01-22 00:00:00", "1964-04-05 00:00:00", "2026-01-06 05:20:00"], ["", "4", "4 SSOM", "", "A06M", "A06M", "--", "--", "--", "A06M", "A06M", "A06M", "--", "--", "--", "--", "", "4", "PAWL, CHR", "", "1996-04-02 00:00:00", "1986-07-01 00:00:00", "1967-07-29 00:00:00", "2026-01-06 05:30:00"], ["", "5", "5 SSOM", "", "--", "A09Z", "A09Z", "--", "--", "--", "--", "A09Z", "A09Z", "A09Z", "--", "--", "", "5", "BELF, VIN", "", "1996-09-25 00:00:00", "1981-05-15 00:00:00", "1962-04-03 00:00:00", "2026-01-06 05:40:00"], ["", "6", "6 SSOM", "", "A09Z", "--", "--", "--", "--", "A09Z", "A09Z", "--", "--", "--", "A09Z", "A09Z", "", "6", "JOHN, BRI", "", "1997-05-01 00:00:00", "1997-05-01 00:00:00", "1965-05-09 00:00:00", "2026-01-06 05:50:00"], ["", "7", "7 SSOM", "", "--", "--", "--", "P12B", "P12B", "--", "--", "--", "--", "P12B", "P12B", "P12B", "", "7", "SMIT, DAV", "", "1997-05-30 00:00:00", "1997-05-30 00:00:00", "1964-11-27 00:00:00", "2026-01-06 06:00:00"], ["", "8", "8 SSOM", "", "P12B", "P12B", "P12B", "--", "--", "--", "--", "P12B", "P12B", "--", "--", "--", "", "8", "CAMP, KEV", "", "1999-11-01 00:00:00", "1995-11-27 00:00:00", "1974-08-23 00:00:00", "2026-01-06 06:10:00"], ["", "9", "9 SSOM", "", "--", "--", "--", "--", "A09Z", "P12B", "P12B", "--", "--", "--", "E05A", "E05A", "", "9", "RECK, JAS", "", "1999-12-04 00:00:00", "1998-09-21 00:00:00", "1975-11-03 00:00:00", "2026-01-06 06:20:00"], ["", "10", "10 SSOM", "", "--", "--", "--", "A09Z", "M18M", "M18M", "--", "--", "--", "--", "A06M", "A06M", "", "10", "DONA, JEF", "", "2005-05-16 00:00:00", "1991-10-14 00:00:00", "1964-05-31 00:00:00", "2026-01-06 06:30:00"], ["", "11", "11 SSOM", "", "--", "--", "M18M", "M18M", "--", "--", "--", "--", "M18M", "M18M", "M18M", "--", "", "11", "ADAM, MAR", "", "2006-10-06 00:00:00", "2006-10-06 00:00:00", "1974-03-15 00:00:00", "2026-01-06 06:40:00"], ["", "12", "12 SSOM", "", "M18M", "M18M", "--", "--", "--", "--", "M18M", "M18M", "--", "--", "--", "M18M", "", "12", "SCHA, DAV", "", "2006-11-06 00:00:00", "2006-11-06 00:00:00", "1977-01-10 00:00:00", "2026-01-06 06:50:00"], ["", "13", "13 SSOM", "", "--", "--", "XXX", "XXX", "--", "--", "--", "XXX", "XXX", "XXX", "--", "--", "", "13", "EMER, JES", "", "2006-12-15 00:00:00", "2006-12-15 00:00:00", "1980-05-23 00:00:00", "2026-01-06 07:00:00"], ["", "14", "14 SSOM", "", "--", "--", "--", "--", "XXX", "XXX", "XXX", "--", "--", "--", "XXX", "XXX", "", "14", "GRAF, BEN", "", "2006-12-15 00:00:00", "2006-12-15 00:00:00", "1980-12-06 00:00:00", "2026-01-06 07:10:00"], ["", "15", "1 SOM", "", "A06C", "--", "--", "--", "--", "A06C", "A06C", "A06C", "--", "--", "--", "A06C", "", "1", "BIRD, DAN", "", "1989-09-27 00:00:00", "1989-09-27 00:00:00", "1968-03-16 00:00:00", "2026-01-06 05:00:00"], ["", "16", "2 SOM", "", "--", "--", "--", "A06C", "A06C", "--", "--", "--", "A06C", "A06C", "A06C", "--", "", "2", "FRAN, DAV", "", "1990-07-27 00:00:00", "1990-07-27 00:00:00", "1966-05-23 00:00:00", "2026-01-06 05:10:00"], ["", "17", "3 SOM", "", "--", "--", "A06F", "A06F", "A06F", "--", "--", "--", "--", "A06F", "A06F", "--", "", "3", "CHAR, CAR", "", "1991-09-01 00:00:00", "1987-01-19 00:00:00", "1961-07-01 00:00:00", "2026-01-06 05:20:00"], ["", "18", "4 SOM", "", "A06F", "A06F", "--", "--", "--", "A06F", "A06F", "--", "--", "--", "--", "A06F", "", "4", "SPRA, PER", "", "1995-08-25 00:00:00", "1985-02-04 00:00:00", "1963-04-07 00:00:00", "2026-01-06 05:30:00"], ["", "19", "5 SOM", "", "A06J", "--", "--", "--", "A06J", "A06J", "--", "--", "--", "--", "A06J", "A06J", "", "5", "OLSE, ED", "", "1995-10-09 00:00:00", "1985-11-13 00:00:00", "1962-08-08 00:00:00", "2026-01-06 05:40:00"], ["", "20", "6 SOM", "", "--", "A06J", "A06J", "A06J", "--", "--", "--", "--", "A06J", "A06J", "--", "--", "", "6", "HARR, JIM", "", "1996-02-01 00:00:00", "1985-11-17 00:00:00", "1964-07-19 00:00:00", "2026-01-06 05:50:00"], ["", "21", "7 SOM", "", "A09D", "--", "--", "--", "A09D", "A09D", "--", "--", "--", "--", "A09D", "A09D", "", "7", "BAIL, RIC", "", "1996-06-16 00:00:00", "1990-04-18 00:00:00", "1967-05-06 00:00:00", "2026-01-06 06:00:00"], ["", "22", "8 SOM", "", "--", "A09D", "A09D", "A09D", "--", "--", "--", "--", "A09D", "A09D", "--", "--", "", "8", "CLAR, JUD", "", "1997-10-16 00:00:00", "1980-06-09 00:00:00", "1961-03-05 00:00:00", "2026-01-06 06:10:00"], ["", "23", "9 SOM", "", "--", "--", "A11H", "A11H", "--", "--", "--", "A11H", "A11H", "A11H", "--", "--", "", "9", "GWIN, BRI", "", "1998-12-01 00:00:00", "1988-07-12 00:00:00", "1967-06-24 00:00:00", "2026-01-06 06:20:00"], ["", "24", "10 SOM", "", "--", "--", "--", "--", "A11H", "A11H", "A11H", "--", "--", "--", "A11H", "A11H", "", "10", "DANI, JEF", "", "1998-12-01 00:00:00", "1991-06-10 00:00:00", "1968-05-26 00:00:00", "2026-01-06 06:30:00"], ["", "25", "11 SOM", "", "P12G", "P12G", "P12G", "--", "--", "--", "P12G", "P12G", "--", "--", "--", "--", "", "11", "SMIT, BAR", "", "1999-09-16 00:00:00", "1985-02-07 00:00:00", "1964-10-07 00:00:00", "2026-01-06 06:40:00"], ["", "26", "12 SOM", "", "--", "--", "--", "P12G", "P12G", "P12G", "--", "--", "--", "--", "P12G", "P12G", "", "12", "RIEL, WAL", "", "1999-11-01 00:00:00", "1990-03-01 00:00:00", "1966-07-01 00:00:00", "2026-01-06 06:50:00"], ["", "27", "13 SOM", "", "P12K", "P12K", "--", "--", "--", "--", "P12K", "P12K", "P12K", "--", "--", "--", "", "13", "ROHL, MIK", "", "2000-01-16 00:00:00", "1985-06-01 00:00:00", "1967-01-05 00:00:00", "2026-01-06 07:00:00"], ["", "28", "14 SOM", "", "--", "--", "--", "--", "P12K", "P12K", "--", "--", "--", "P12K", "P12K", "P12K", "", "14", "HOUC, DAV", "", "2000-06-01 00:00:00", "1988-12-01 00:00:00", "1968-01-20 00:00:00", "2026-01-06 07:10:00"], ["", "29", "15 SOM", "", "--", "--", "P12E", "P12E", "P12E", "--", "--", "--", "P12E", "P12E", "--", "--", "", "15", "STAN, LAN", "", "2000-06-01 00:00:00", "1989-09-18 00:00:00", "1966-11-05 00:00:00", "2026-01-06 07:20:00"], ["", "30", "16 SOM", "", "P12E", "P12E", "--", "--", "--", "P12E", "P12E", "P12E", "--", "--", "--", "--", "", "16", "HOBS, MAR", "", "2000-09-11 00:00:00", "2000-09-11 00:00:00", "1971-04-04 00:00:00", "2026-01-06 07:30:00"], ["", "31", "17 SOM", "", "A11H", "A11H", "--", "--", "--", "--", "A09D", "A09D", "--", "--", "--", "P12E", "", "17", "HOFF, DAN", "", "2000-09-16 00:00:00", "1982-01-11 00:00:00", "1961-07-26 00:00:00", "2026-01-06 07:40:00"], ["", "32", "18 SOM", "", "--", "--", "P12K", "P12K", "--", "--", "--", "--", "P12G", "P12G", "P12E", "--", "", "18", "BAKE, ERI", "", "2000-12-04 00:00:00", "1995-12-11 00:00:00", "1972-01-12 00:00:00", "2026-01-06 07:50:00"], ["", "33", "19 SOM", "", "--", "A06C", "A06C", "--", "--", "--", "A06J", "A06F", "A06F", "--", "--", "--", "", "19", "PUSZ, JIM", "", "2001-02-16 00:00:00", "1990-10-15 00:00:00", "1964-07-07 00:00:00", "2026-01-06 08:00:00"], ["", "34", "20 SOM", "", "--", "A11O", "A11O", "--", "--", "--", "--", "A11O", "A11O", "A11O", "--", "--", "", "20", "HARA, DUD", "", "2001-04-01 00:00:00", "1996-12-02 00:00:00", "1971-09-23 00:00:00", "2026-01-06 08:10:00"], ["", "35", "21 SOM", "", "A11O", "--", "--", "--", "--", "A11O", "A11O", "--", "--", "--", "A11O", "A11O", "", "21", "BATT, JAI", "", "2004-09-01 00:00:00", "2004-03-22 00:00:00", "1977-04-21 00:00:00", "2026-01-06 08:20:00"], ["", "36", "22 SOM", "", "A06N", "A06N", "A06N", "--", "--", "--", "A06N", "A06N", "--", "--", "--", "--", "", "22", "SUCH, CHR", "", "2004-09-01 00:00:00", "2004-09-01 00:00:00", "1978-03-24 00:00:00", "2026-01-06 08:30:00"], ["", "37", "23 SOM", "", "--", "--", "--", "A06N", "A06N", "A06N", "--", "--", "--", "--", "A06N", "A06N", "", "23", "VOGT, DAV", "", "2005-04-01 00:00:00", "1996-09-09 00:00:00", "1978-07-06 00:00:00", "2026-01-06 08:40:00"], ["", "38", "24 SOM", "", "A06Q", "A06Q", "--", "--", "--", "--", "A06Q", "A06Q", "A06Q", "--", "--", "--", "", "24", "HURL, JAC", "", "2005-05-16 00:00:00", "1991-06-24 00:00:00", "1969-12-30 00:00:00", "2026-01-06 08:50:00"], ["", "39", "25 SOM", "", "--", "--", "--", "--", "A06Q", "A06Q", "--", "--", "--", "A06Q", "A06Q", "A06Q", "", "25", "MCEL, KEV", "", "2005-05-16 00:00:00", "1997-03-10 00:00:00", "1978-04-05 00:00:00", "2026-01-06 09:00:00"], ["", "40", "26 SOM", "", "A06R", "--", "--", "--", "--", "A06R", "A06R", "A06R", "--", "--", "--", "A06R", "", "26", "REED, MIK", "", "2005-05-16 00:00:00", "1997-05-05 00:00:00", "1972-03-25 00:00:00", "2026-01-06 09:10:00"], ["", "41", "27 SOM", "", "--", "--", "--", "A06R", "A06R", "--", "--", "--", "A06R", "A06R", "A06R", "--", "", "27", "FUJI, ROX", "", "2005-05-16 00:00:00", "1998-12-28 00:00:00", "1974-10-25 00:00:00", "2026-01-06 09:20:00"], ["", "42", "28 SOM", "", "A06S", "A06S", "--", "--", "--", "A06S", "A06S", "--", "--", "--", "--", "A06S", "", "28", "O'DO, BRI", "", "2005-05-16 00:00:00", "1999-10-25 00:00:00", "1971-05-20 00:00:00", "2026-01-06 09:30:00"], ["", "43", "29 SOM", "", "--", "--", "A06S", "A06S", "A06S", "--", "--", "--", "--", "A06S", "A06S", "--", "", "29", "HAMI, ADA", "", "2006-10-23 00:00:00", "2006-10-23 00:00:00", "1982-01-20 00:00:00", "2026-01-06 09:40:00"], ["", "44", "30 SOM", "", "--", "A06U", "A06U", "--", "--", "--", "--", "A06U", "A06U", "A06U", "--", "--", "", "30", "GEIG, GEO", "", "2007-01-16 00:00:00", "1984-08-27 00:00:00", "1963-05-25 00:00:00", "2026-01-06 09:50:00"], ["", "45", "31 SOM", "", "A06U", "--", "--", "--", "--", "A06U", "A06U", "--", "--", "--", "A06U", "A06U", "", "31", "O'DO, WEN", "", "2007-01-16 00:00:00", "1995-06-14 00:00:00", "1970-10-28 00:00:00", "2026-01-06 10:00:00"], ["", "46", "32 SOM", "", "A06V", "A06V", "A06V", "--", "--", "--", "A06V", "A06V", "--", "--", "--", "--", "", "32", "ESTE, KAT", "", "2007-01-16 00:00:00", "2005-07-08 00:00:00", "1979-06-20 00:00:00", "2026-01-06 10:10:00"], ["", "47", "33 SOM", "", "--", "--", "--", "A06V", "A06V", "A06V", "--", "--", "--", "--", "A06V", "A06V", "", "33", "RINE, RAL", "", "2007-03-16 00:00:00", "2007-03-16 00:00:00", "1969-05-10 00:00:00", "2026-01-06 10:20:00"], ["", "48", "34 SOM", "", "--", "A06W", "A06W", "--", "--", "--", "--", "A06W", "A06W", "A06W", "--", "--", "", "34", "ROMA, KEN", "", "2007-10-01 00:00:00", "1994-06-06 00:00:00", "1970-12-19 00:00:00", "2026-01-06 10:30:00"], ["", "49", "35 SOM", "", "A06W", "--", "--", "--", "--", "A06W", "A06W", "--", "--", "--", "A06W", "A06W", "", "35", "HALL, CHA", "", "2010-11-16 00:00:00", "1993-10-04 00:00:00", "1971-10-11 00:00:00", "2026-01-06 10:40:00"], ["", "50", "36 SOM", "", "A06X", "--", "--", "--", "--", "A06X", "A06X", "A06X", "--", "--", "--", "A06X", "", "36", "LONG, AND", "", "2010-11-16 00:00:00", "1996-04-10 00:00:00", "1960-02-27 00:00:00", "2026-01-06 10:50:00"], ["", "51", "37 SOM", "", "--", "--", "--", "A06X", "A06X", "--", "--", "--", "A06X", "A06X", "A06X", "--", "", "37", "PAPP, ROB", "", "2010-11-16 00:00:00", "1996-08-09 00:00:00", "1975-08-15 00:00:00", "2026-01-06 11:00:00"], ["", "52", "38 SOM", "", "A06Y", "A06Y", "A06Y", "--", "--", "--", "A06Y", "A06Y", "--", "--", "--", "--", "", "38", "GAGN, JUL", "", "2010-11-16 00:00:00", "1997-04-14 00:00:00", "1969-06-14 00:00:00", "2026-01-06 11:10:00"], ["", "53", "39 SOM", "", "--", "--", "--", "A06Y", "A06Y", "A06Y", "--", "--", "--", "--", "A06Y", "A06Y", "", "39", "MALE, TOD", "", "2010-11-16 00:00:00", "1997-04-16 00:00:00", "1976-09-17 00:00:00", "2026-01-06 11:20:00"], ["", "54", "40 SOM", "", "--", "A06X", "A06X", "--", "--", "--", "--", "A06J", "A06V", "A06V", "--", "--", "", "40", "MISN, HUO", "", "2010-11-16 00:00:00", "1998-06-29 00:00:00", "1979-03-14 00:00:00", "2026-01-06 11:30:00"], ["", "55", "41 SOM", "", "--", "--", "A06R", "A06W", "A06W", "--", "--", "--", "A06N", "A06N", "--", "--", "", "41", "O'BR, DAV", "", "2010-11-16 00:00:00", "2000-02-21 00:00:00", "1977-03-27 00:00:00", "2026-01-06 11:40:00"], ["", "56", "42 SOM", "", "--", "A06R", "A06Q", "A06Q", "--", "--", "--", "A06S", "A06S", "--", "--", "--", "", "42", "DELA, WIL", "", "2010-11-16 00:00:00", "2009-08-17 00:00:00", "1975-11-14 00:00:00", "2026-01-06 11:50:00"], ["", "57", "43 SOM", "", "--", "--", "--", "A06U", "A06U", "--", "--", "--", "A06Y", "A06Y", "XX", "--", "", "43", "BETC, MIC", "", "2011-04-16 00:00:00", "2011-04-16 00:00:00", "1972-02-03 00:00:00", "2026-01-06 12:00:00"], ["", "58", "44 SOM", "", "--", "--", "--", "M18N", "M18N", "M18N", "--", "--", "--", "--", "M18N", "M18N", "", "44", "JOLL, DAV", "", "2011-04-16 00:00:00", "2011-04-16 00:00:00", "1973-09-10 00:00:00", "2026-01-06 12:10:00"], ["", "59", "45 SOM", "", "M18N", "M18N", "M18N", "--", "--", "--", "M18N", "M18N", "--", "--", "--", "--", "", "45", "TOZZ, GIN", "", "2012-08-01 00:00:00", "2012-08-01 00:00:00", "1966-02-11 00:00:00", "2026-01-06 12:20:00"], ["", "60", "46 SOM", "", "M18Q", "M18Q", "--", "--", "--", "--", "M18Q", "M18Q", "M18Q", "--", "--", "--", "", "46", "MCMO, SHA", "", "2012-08-01 00:00:00", "2012-08-01 00:00:00", "1981-06-01 00:00:00", "2026-01-06 12:30:00"], ["", "61", "47 SOM", "", "--", "--", "--", "--", "M18Q", "M18Q", "--", "--", "--", "M18Q", "M18Q", "M18Q", "", "47", "RUCK, RIC", "", "2013-11-16 00:00:00", "2013-11-16 00:00:00", "1970-04-07 00:00:00", "2026-01-06 12:40:00"], ["", "62", "48 SOM", "", "M18R", "--", "--", "--", "--", "M18R", "M18R", "M18R", "--", "--", "--", "M18R", "", "48", "WARN, DEE", "", "2013-11-16 00:00:00", "2013-11-16 00:00:00", "1974-01-08 00:00:00", "2026-01-06 12:50:00"], ["", "63", "49 SOM", "", "--", "--", "--", "M18R", "M18R", "--", "--", "--", "M18R", "M18R", "M18R", "--", "", "49", "HENE, AND", "", "2013-11-16 00:00:00", "2013-11-16 00:00:00", "1984-12-07 00:00:00", "2026-01-06 13:00:00"], ["", "64", "50 SOM", "", "M18S", "M18S", "--", "--", "--", "M18S", "M18S", "--", "--", "--", "--", "M18S", "", "50", "OSOJ, MER", "", "2013-11-16 00:00:00", "2013-11-16 00:00:00", "1986-10-27 00:00:00", "2026-01-06 13:10:00"], ["", "65", "51 SOM", "", "--", "--", "M18S", "M18S", "M18S", "--", "--", "--", "--", "M18S", "M18S", "--", "", "51", "FOLE, RYA", "", "2014-09-16 00:00:00", "2006-06-21 00:00:00", "1988-01-05 00:00:00", "2026-01-06 13:20:00"], ["", "66", "52 SOM", "", "--", "--", "M18U", "M18U", "M18U", "--", "--", "--", "M18U", "M18U", "--", "--", "", "52", "HILL, SEA", "", "2014-09-16 00:00:00", "2006-08-07 00:00:00", "1979-04-11 00:00:00", "2026-01-06 13:30:00"], ["", "67", "53 SOM", "", "M18U", "M18U", "--", "--", "--", "M18U", "M18U", "M18U", "--", "--", "--", "--", "", "53", "MUGE, JEN", "", "2014-09-16 00:00:00", "2007-07-16 00:00:00", "1971-02-22 00:00:00", "2026-01-06 13:40:00"], ["", "68", "54 SOM", "", "--", "M18V", "M18V", "--", "--", "--", "--", "M18V", "M18V", "M18V", "--", "--", "", "54", "DENM, JOH", "", "2014-09-16 00:00:00", "2014-09-16 00:00:00", "1985-05-02 00:00:00", "2026-01-06 13:50:00"], ["", "69", "55 SOM", "", "M18V", "--", "--", "--", "--", "M18V", "M18V", "--", "--", "--", "M18V", "M18V", "", "55", "MAKI, RYA", "", "2014-11-17 00:00:00", "2014-11-17 00:00:00", "1988-01-03 00:00:00", "2026-01-06 14:00:00"], ["", "70", "56 SOM", "", "--", "M18W", "M18W", "--", "--", "--", "--", "M18W", "M18W", "M18W", "--", "--", "", "56", "MCGR, DEA", "", "2015-05-18 00:00:00", "1994-08-30 00:00:00", "1972-03-19 00:00:00", "2026-01-06 14:10:00"], ["", "71", "57 SOM", "", "M18W", "--", "--", "--", "--", "M18W", "M18W", "--", "--", "--", "M18W", "M18W", "", "57", "BRAD, LAT", "", "2015-05-18 00:00:00", "2006-01-09 00:00:00", "1970-12-28 00:00:00", "2026-01-06 14:20:00"], ["", "72", "58 SOM", "", "--", "M18X", "M18X", "M18X", "--", "--", "--", "M18X", "M18X", "--", "--", "--", "", "58", "HATL, HER", "", "2015-05-18 00:00:00", "2007-08-27 00:00:00", "1982-10-22 00:00:00", "2026-01-06 14:30:00"], ["", "73", "59 SOM", "", "M18X", "--", "--", "--", "M18X", "M18X", "M18X", "--", "--", "--", "--", "M18X", "", "59", "HAYE, JOH", "", "2015-05-18 00:00:00", "2011-11-21 00:00:00", "1983-05-07 00:00:00", "2026-01-06 14:40:00"], ["", "74", "60 SOM", "", "M18Y", "M18Y", "M18Y", "--", "--", "--", "M18Y", "M18Y", "--", "--", "--", "--", "", "60", "HARR, ELE", "", "2015-05-18 00:00:00", "2014-01-08 00:00:00", "1990-05-07 00:00:00", "2026-01-06 14:50:00"], ["", "75", "61 SOM", "", "--", "--", "--", "M18Y", "M18Y", "M18Y", "--", "--", "--", "--", "M18Y", "M18Y", "", "61", "PIOT, MAR", "", "2015-08-17 00:00:00", "2008-03-11 00:00:00", "1983-08-10 00:00:00", "2026-01-06 15:00:00"], ["", "76", "62 SOM", "", "--", "--", "--", "M18V", "M18V", "--", "--", "--", "--", "M18X", "M18X", "M18U", "", "62", "YAGE, LAR", "", "2015-08-17 00:00:00", "2015-08-17 00:00:00", "1983-08-05 00:00:00", "2026-01-06 15:10:00"], ["", "77", "63 SOM", "", "--", "--", "M18R", "M18W", "M18W", "--", "--", "--", "M18N", "M18N", "--", "--", "", "63", "CART, WES", "", "2015-08-17 00:00:00", "2015-08-17 00:00:00", "1989-11-16 00:00:00", "2026-01-06 15:20:00"], ["", "78", "64 SOM", "", "--", "M18R", "M18Q", "M18Q", "--", "--", "--", "M18S", "M18S", "--", "--", "--", "", "64", "GAUL, PET", "", "2015-08-17 00:00:00", "2015-08-17 00:00:00", "1990-04-26 00:00:00", "2026-01-06 15:30:00"], ["", "79", "65 SOM", "", "--", "--", "--", "A11O", "A11O", "--", "--", "--", "M18Y", "M18Y", "M18U", "--", "", "65", "BOST, GRE", "", "2016-01-11 00:00:00", "1998-07-20 00:00:00", "1980-01-16 00:00:00", "2026-01-06 15:40:00"], ["", "80", "66 SOM", "", "--", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--", "", "66", "HINT, SEL", "", "2016-01-11 00:00:00", "2010-07-05 00:00:00", "1987-09-07 00:00:00", "2026-01-06 15:50:00"], ["", "81", "67 SOM", "", "--", "--", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "", "67", "TJAD, AND", "", "2016-01-11 00:00:00", "2011-09-26 00:00:00", "1988-02-12 00:00:00", "2026-01-06 16:00:00"], ["", "82", "68 SOM", "", "--", "--", "--", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "", "68", "GEUR, STE", "", "2016-03-28 00:00:00", "2011-05-16 00:00:00", "1989-05-17 00:00:00", "2026-01-06 16:10:00"], ["", "83", "69 SOM", "", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "", "69", "KENT, AND", "", "2016-09-06 00:00:00", "1997-02-01 00:00:00", "1977-06-30 00:00:00", "2026-01-06 16:20:00"], ["", "84", "70 SOM", "", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "--", "--", "--", "", "70", "SAMU, CHA", "", "2016-09-06 00:00:00", "2007-07-30 00:00:00", "1986-05-04 00:00:00", "2026-01-06 16:30:00"], ["", "85", "71 SOM", "", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "--", "--", "", "71", "CORN, DAN", "", "2017-10-02 00:00:00", "2008-02-25 00:00:00", "1987-02-11 00:00:00", "2026-01-06 16:40:00"], ["", "86", "72 SOM", "", "--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "--", "", "72", "FATT, KEL", "", "2018-01-16 00:00:00", "2007-05-01 00:00:00", "1986-10-18 00:00:00", "2026-01-06 16:50:00"], ["", "87", "73 SOM", "", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "", "73", "STAR, JIM", "", "2018-01-16 00:00:00", "2011-06-06 00:00:00", "1972-02-04 00:00:00", "2026-01-06 17:00:00"], ["", "88", "74 SOM", "", "--", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "", "74", "ALLE, JOS", "", "2018-12-03 00:00:00", "2012-10-08 00:00:00", "1979-05-17 00:00:00", "2026-01-06 17:10:00"], ["", "89", "75 SOM", "", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "", "75", "LATT, WIL", "", "2018-12-03 00:00:00", "2018-12-03 00:00:00", "1986-07-18 00:00:00", "2026-01-06 17:20:00"], ["", "90", "76 SOM", "", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX", "", "76", "TURI, LAU", "", "2019-03-11 00:00:00", "2019-03-11 00:00:00", "1992-01-28 00:00:00", "2026-01-06 17:30:00"], ["", "91", "77 SOM", "", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--", "--", "", "77", "AUST, STE", "", "2019-10-30 00:00:00", "2007-08-20 00:00:00", "1982-11-26 00:00:00", "2026-01-06 17:40:00"], ["", "92", "78 SOM", "", "--", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--", "", "78", "RAIN, MIK", "", "2019-10-30 00:00:00", "2014-06-30 00:00:00", "1976-10-31 00:00:00", "2026-01-06 17:50:00"], ["", "93", "79 SOM", "", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "", "79", "MILL, CRA", "", "2021-09-07 00:00:00", "2021-09-07 00:00:00", "1992-11-10 00:00:00", "2026-01-06 18:00:00"], ["", "94", "80 SOM", "", "--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "--", "", "80", "LITT, CLA", "", "2022-07-11 00:00:00", "2008-06-16 00:00:00", "1986-07-31 00:00:00", "2026-01-06 18:10:00"], ["", "95", "81 SOM", "", "--", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "", "81", "PIER, MAR", "", "2022-07-11 00:00:00", "2022-07-11 00:00:00", "1990-05-13 00:00:00", "2026-01-06 18:20:00"], ["", "96", "82 SOM", "", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX", "", "82", "HARN, ZAC", "", "2022-07-11 00:00:00", "2022-07-11 00:00:00", "1994-12-21 00:00:00", "2026-01-06 18:30:00"]]};
+    
+    let assignments = {};
+    let isAdmin = false;
+    let syncInterval = null;
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Check for stored admin session
+        if (sessionStorage.getItem('polish_bid_admin') === 'true') {
+            isAdmin = true;
+            enableAdminMode();
+        }
+        
+        await initCloud();
+        renderAll();
+        
+        // Auto-refresh for viewers every 10 seconds
+        if (!isAdmin) {
+            syncInterval = setInterval(loadFromCloud, 10000);
+        }
+    });
+    
+    // Cloud Functions
+    async function initCloud() {
+        if (BIN_ID) {
+            await loadFromCloud();
+        } else {
+            // Create new bin
+            await createBin();
+        }
+    }
+    
+    async function createBin() {
+        setSyncStatus('syncing', 'Creating cloud storage...');
+        try {
+            const response = await fetch('https://api.jsonbin.io/v3/b', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': JSONBIN_API_KEY,
+                    'X-Bin-Name': 'polish-bid-2026-2027',
+                    'X-Bin-Private': 'false'
+                },
+                body: JSON.stringify({ assignments: {}, lastUpdated: new Date().toISOString() })
+            });
+            const data = await response.json();
+            BIN_ID = data.metadata.id;
+            localStorage.setItem('polish_bid_bin_id', BIN_ID);
+            setSyncStatus('ok', 'Cloud storage ready');
+        } catch (err) {
+            console.error('Failed to create bin:', err);
+            setSyncStatus('error', 'Cloud error - using local');
+            loadLocal();
+        }
+    }
+    
+    async function loadFromCloud() {
+        if (!BIN_ID) return;
+        
+        setSyncStatus('syncing', 'Syncing...');
+        try {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': JSONBIN_API_KEY }
+            });
+            const data = await response.json();
+            if (data.record && data.record.assignments) {
+                assignments = data.record.assignments;
+                renderAll();
+                const time = new Date().toLocaleTimeString();
+                setSyncStatus('ok', `Synced ${time}`);
+            }
+        } catch (err) {
+            console.error('Failed to load from cloud:', err);
+            setSyncStatus('error', 'Sync failed');
+        }
+    }
+    
+    async function saveToCloud() {
+        if (!BIN_ID || !isAdmin) return;
+        
+        setSyncStatus('syncing', 'Saving...');
+        try {
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': JSONBIN_API_KEY
+                },
+                body: JSON.stringify({ 
+                    assignments: assignments, 
+                    lastUpdated: new Date().toISOString() 
+                })
+            });
+            const time = new Date().toLocaleTimeString();
+            setSyncStatus('ok', `Saved ${time}`);
+        } catch (err) {
+            console.error('Failed to save to cloud:', err);
+            setSyncStatus('error', 'Save failed');
+        }
+    }
+    
+    function setSyncStatus(status, text) {
+        const dot = document.getElementById('syncDot');
+        const txt = document.getElementById('syncText');
+        dot.className = 'sync-dot' + (status === 'syncing' ? ' syncing' : status === 'error' ? ' error' : '');
+        txt.textContent = text;
+    }
+    
+    // Local Storage Fallback
+    function loadLocal() {
+        const saved = localStorage.getItem('polish_bid_assignments_v4');
+        if (saved) {
+            try { assignments = JSON.parse(saved); } catch(e) {}
+        }
+    }
+    
+    function saveLocal() {
+        localStorage.setItem('polish_bid_assignments_v4', JSON.stringify(assignments));
+    }
+    
+    // Admin Functions
+    function showPasswordModal() {
+        document.getElementById('passwordModal').classList.add('show');
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordError').style.display = 'none';
+        document.getElementById('passwordInput').focus();
+    }
+    
+    function hidePasswordModal() {
+        document.getElementById('passwordModal').classList.remove('show');
+    }
+    
+    function checkPassword() {
+        const input = document.getElementById('passwordInput').value;
+        if (input === ADMIN_PASSWORD) {
+            isAdmin = true;
+            sessionStorage.setItem('polish_bid_admin', 'true');
+            hidePasswordModal();
+            enableAdminMode();
+            
+            // Stop auto-refresh for admin
+            if (syncInterval) {
+                clearInterval(syncInterval);
+                syncInterval = null;
+            }
+            
+            renderAll();
+        } else {
+            document.getElementById('passwordError').style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+        }
+    }
+    
+    function enableAdminMode() {
+        document.getElementById('modeIndicator').textContent = 'ADMIN';
+        document.getElementById('modeIndicator').className = 'mode-indicator admin';
+        document.getElementById('adminBtn').textContent = 'Logout';
+        document.getElementById('adminBtn').onclick = logout;
+        document.getElementById('importBtn').disabled = false;
+        document.getElementById('clearBtn').disabled = false;
+    }
+    
+    function logout() {
+        isAdmin = false;
+        sessionStorage.removeItem('polish_bid_admin');
+        document.getElementById('modeIndicator').textContent = 'VIEWER';
+        document.getElementById('modeIndicator').className = 'mode-indicator viewer';
+        document.getElementById('adminBtn').textContent = 'Admin Login';
+        document.getElementById('adminBtn').onclick = showPasswordModal;
+        document.getElementById('importBtn').disabled = true;
+        document.getElementById('clearBtn').disabled = true;
+        
+        // Restart auto-refresh
+        syncInterval = setInterval(loadFromCloud, 10000);
+        
+        renderAll();
+    }
+    
+    // Render Functions
+    function renderAll() {
+        renderGroup(GROUP1, 'group1List', 'g1');
+        renderGroup(GROUP2, 'group2List', 'g2');
+        renderAllLines();
+        updateStats();
+    }
+    
+    function getLineData(lineNbr) {
+        return ANNUAL_BID.rows.find(r => r[1] === lineNbr || r[1] === String(lineNbr));
+    }
+    
+    function getLineToBidder() {
+        const lineToName = {};
+        Object.entries(assignments).forEach(([key, lineNbr]) => {
+            const [prefix, nbr] = key.split('-');
+            const group = prefix === 'g1' ? GROUP1 : GROUP2;
+            const person = group.find(p => p.nbr === parseInt(nbr));
+            if (person) lineToName[lineNbr] = person.name;
+        });
+        return lineToName;
+    }
+    
+    function renderGroup(group, containerId, prefix) {
+        const container = document.getElementById(containerId);
+        
+        container.innerHTML = group.map(person => {
+            const key = prefix + '-' + person.nbr;
+            const assignedLine = assignments[key] || '';
+            
+            if (isAdmin) {
+                return `
+                    <div class="seniority-entry ${assignedLine ? 'assigned' : ''}" id="entry-${key}">
+                        <div class="sen-nbr">${person.nbr}</div>
+                        <div class="sen-name">${person.name}</div>
+                        <input type="text" 
+                               class="sen-input ${assignedLine ? 'filled' : ''}" 
+                               id="input-${key}"
+                               value="${assignedLine}"
+                               placeholder="—"
+                               onchange="assignLine('${key}', this.value)"
+                               onkeydown="handleKeyDown(event, '${key}')">
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="seniority-entry ${assignedLine ? 'assigned' : ''}" id="entry-${key}">
+                        <div class="sen-nbr">${person.nbr}</div>
+                        <div class="sen-name">${person.name}</div>
+                        <div class="sen-line-display ${assignedLine ? '' : 'empty'}">${assignedLine || '—'}</div>
+                    </div>
+                `;
+            }
+        }).join('');
+    }
+    
+    function renderAllLines() {
+        const container = document.getElementById('allLinesList');
+        const lineToBidder = getLineToBidder();
+        
+        container.innerHTML = ANNUAL_BID.rows.map(row => {
+            const lineNbr = row[1];
+            const bidder = lineToBidder[lineNbr];
+            const isTaken = !!bidder;
+            
+            let dayCells = '';
+            for (let i = 0; i < 12; i++) {
+                const val = row[4 + i] || '-';
+                const isOff = val === '--';
+                dayCells += `<div class="day-cell ${isOff ? 'off' : ''}">${val}</div>`;
+            }
+            
+            return `
+                <div class="line-row ${isTaken ? 'taken' : ''}">
+                    <div class="line-nbr">${lineNbr}</div>
+                    <div class="line-desc">${row[2]}</div>
+                    <div class="line-bidder ${isTaken ? 'taken' : 'available'}">${bidder || 'Available'}</div>
+                    ${dayCells}
+                </div>
+            `;
+        }).join('');
+    }
+    
+    function handleKeyDown(event, key) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            assignLine(key, event.target.value);
+            
+            const inputs = document.querySelectorAll('.sen-input');
+            const currentIndex = Array.from(inputs).findIndex(inp => inp.id === 'input-' + key);
+            if (currentIndex < inputs.length - 1) {
+                inputs[currentIndex + 1].focus();
+            }
+        }
+    }
+    
+    function assignLine(key, value) {
+        if (!isAdmin) return;
+        
+        const lineNbr = value.trim();
+        
+        if (lineNbr === '') {
+            delete assignments[key];
+        } else {
+            const row = getLineData(lineNbr);
+            if (!row) {
+                alert('Line ' + lineNbr + ' not found!');
+                document.getElementById('input-' + key).value = assignments[key] || '';
+                return;
+            }
+            
+            const existingKey = Object.entries(assignments).find(([k, v]) => v === lineNbr && k !== key);
+            if (existingKey) {
+                const [eKey] = existingKey;
+                const [prefix, nbr] = eKey.split('-');
+                const group = prefix === 'g1' ? GROUP1 : GROUP2;
+                const person = group.find(p => p.nbr === parseInt(nbr));
+                alert('Line ' + lineNbr + ' is already assigned to ' + person.name);
+                document.getElementById('input-' + key).value = assignments[key] || '';
+                return;
+            }
+            
+            assignments[key] = lineNbr;
+        }
+        
+        saveLocal();
+        saveToCloud();
+        renderAll();
+    }
+    
+    function updateStats() {
+        let takenSSOM = 0;
+        let takenSOM = 0;
+        
+        Object.keys(assignments).forEach(key => {
+            if (key.startsWith('g1-')) {
+                takenSSOM++;
+            } else if (key.startsWith('g2-')) {
+                takenSOM++;
+            }
+        });
+        
+        document.getElementById('statTakenSSOM').textContent = takenSSOM;
+        document.getElementById('statAvailSSOM').textContent = GROUP1.length - takenSSOM;
+        document.getElementById('statTakenSOM').textContent = takenSOM;
+        document.getElementById('statAvailSOM').textContent = GROUP2.length - takenSOM;
+    }
+    
+    // Modal Functions
+    function showLegend() {
+        document.getElementById('legendModal').classList.add('show');
+    }
+    
+    function hideLegend() {
+        document.getElementById('legendModal').classList.remove('show');
+    }
+    
+    // Import/Export
+    function exportData() {
+        const data = {
+            assignments: assignments,
+            exported: new Date().toISOString(),
+            version: 5
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'polish-bid-backup-' + new Date().toISOString().split('T')[0] + '.json';
+        a.click();
+    }
+    
+    function importData() {
+        if (!isAdmin) return;
+        
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = async (e) => {
+            try {
+                const file = e.target.files[0];
+                const text = await file.text();
+                const data = JSON.parse(text);
+                if (data.assignments) {
+                    assignments = data.assignments;
+                    saveLocal();
+                    await saveToCloud();
+                    renderAll();
+                    alert('Imported ' + Object.keys(assignments).length + ' assignments!');
+                }
+            } catch(err) {
+                alert('Error importing: ' + err.message);
+            }
+        };
+        input.click();
+    }
+    
+    function clearAll() {
+        if (!isAdmin) return;
+        
+        if (confirm('Clear all assignments? This cannot be undone.')) {
+            assignments = {};
+            saveLocal();
+            saveToCloud();
+            renderAll();
+        }
+    }
+    </script>
+</body>
+</html>

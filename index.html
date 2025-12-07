@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre-Bid Polish Bid 2026-2027</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #1a1a2e; 
+            color: #eee; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 2px solid #0f3460;
+            flex-shrink: 0;
+        }
+        .header h1 { color: #e94560; font-size: 1.5em; }
+        .header p { color: #888; margin-top: 3px; font-size: 12px; }
+        
+        .status-bar {
+            background: #0f3460;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .status-bar .stats { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        .stat { display: flex; align-items: center; gap: 5px; }
+        .stat-label { color: #888; }
+        .stat-value { color: #4ecca3; font-weight: bold; }
+        .stat-value.available { color: #e94560; }
+        
+        .mode-indicator {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .mode-indicator.admin { background: #e94560; color: white; }
+        .mode-indicator.viewer { background: #4ecca3; color: #1a1a2e; }
+        
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #888;
+            font-size: 11px;
+        }
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ecca3;
+        }
+        .sync-dot.syncing { background: #f0a500; animation: pulse 1s infinite; }
+        .sync-dot.error { background: #e94560; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        .main-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: auto;
+            padding: 15px;
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 10px;
+            min-height: min-content;
+        }
+        
+        .panel {
+            background: #16213e;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .panel-header {
+            background: #0f3460;
+            padding: 8px 10px;
+            color: #e94560;
+            font-weight: bold;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .panel-content {
+            padding: 8px;
+        }
+        
+        .group-title {
+            color: #4ecca3;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 4px 4px 4px;
+            border-top: 1px solid #0f3460;
+            margin-top: 8px;
+        }
+        .group-title:first-child { border-top: none; margin-top: 0; }
+        
+        .entry-header {
+            display: grid;
+            grid-template-columns: 28px 1fr 42px 20px;
+            gap: 4px;
+            padding: 5px 6px;
+            background: #0f3460;
+            border-radius: 5px;
+            margin-bottom: 4px;
+            font-size: 12px;
+            color: #4ecca3;
+            font-weight: bold;
+        }
+        
+        .seniority-entry {
+            display: grid;
+            grid-template-columns: 28px 1fr 42px 20px;
+            gap: 4px;
+            align-items: center;
+            padding: 4px 6px;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            background: #1a1a2e;
+            font-size: 12px;
+        }
+        .seniority-entry:hover { background: #0f3460; }
+        .seniority-entry.assigned { background: rgba(78,204,163,0.2); }
+        
+        .sen-nbr {
+            color: #888;
+            font-weight: bold;
+            text-align: center;
+        }
+        .sen-name {
+            color: #eee;
+            white-space: nowrap;
+            overflow: visible;
+            font-size: 11px;
+        }
+        .sen-input {
+            width: 38px;
+            padding: 4px 2px;
+            border: 2px solid #0f3460;
+            border-radius: 3px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 13px;
+            text-align: center;
+        }
+        .sen-input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .sen-input.filled {
+            border-color: #4ecca3;
+            background: rgba(78,204,163,0.15);
+            color: #4ecca3;
+            font-weight: bold;
+        }
+        .sen-line-display {
+            width: 38px;
+            padding: 4px 2px;
+            border: 2px solid #0f3460;
+            border-radius: 3px;
+            background: #1a1a2e;
+            color: #4ecca3;
+            font-size: 13px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .sen-line-display.empty {
+            color: #555;
+        }
+        .sen-delete {
+            width: 18px;
+            height: 18px;
+            border: none;
+            border-radius: 3px;
+            background: #e94560;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin-left: 2px;
+        }
+        .sen-delete:hover {
+            background: #ff6b6b;
+        }
+        
+        .lines-header {
+            display: grid;
+            grid-template-columns: 35px 70px 70px repeat(12, 1fr);
+            gap: 2px;
+            padding: 5px 4px;
+            background: #0f3460;
+            border-radius: 5px;
+            margin-bottom: 2px;
+            font-size: 11px;
+            color: #4ecca3;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .lines-holiday-subheader {
+            display: grid;
+            grid-template-columns: 35px 70px 70px repeat(12, 1fr);
+            gap: 2px;
+            padding: 1px 4px;
+            font-size: 9px;
+            color: #e94560;
+            text-align: center;
+        }
+        .lines-holiday-subheader .spacer { grid-column: span 3; }
+        
+        .line-row {
+            display: grid;
+            grid-template-columns: 35px 70px 70px repeat(12, 1fr);
+            gap: 2px;
+            align-items: center;
+            padding: 3px 4px;
+            border-radius: 4px;
+            margin-bottom: 1px;
+            background: #1a1a2e;
+            font-size: 11px;
+        }
+        .line-row:hover { background: #0f3460; }
+        .line-row.taken { background: rgba(78,204,163,0.15); }
+        
+        .line-nbr {
+            color: #4ecca3;
+            font-weight: bold;
+            text-align: center;
+        }
+        .line-desc {
+            color: #000;
+            font-size: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 1px 3px;
+            border-radius: 2px;
+        }
+        .line-bidder {
+            font-size: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .line-bidder.taken { color: #f0a500; font-weight: bold; }
+        .line-bidder.available { color: #555; font-style: italic; }
+        
+        .day-cell {
+            text-align: center;
+            font-size: 10px;
+            color: #000;
+            padding: 2px 1px;
+            background: #ddd;
+            border-radius: 2px;
+        }
+        
+        .footer {
+            background: #16213e;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        .btn {
+            padding: 6px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #e94560; color: white; }
+        .btn-primary:hover { background: #ff6b6b; }
+        .btn-secondary { background: #0f3460; color: #eee; }
+        .btn-secondary:hover { background: #2a3f5f; }
+        .btn-legend { background: #4ecca3; color: #1a1a2e; }
+        .btn-admin { background: #f0a500; color: #1a1a2e; }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal h3 { color: #e94560; margin-bottom: 15px; }
+        .modal-close {
+            float: right;
+            background: #e94560;
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .legend-section h4 { color: #4ecca3; margin-bottom: 10px; font-size: 13px; }
+        .legend-item {
+            display: flex;
+            gap: 10px;
+            padding: 5px 0;
+            font-size: 12px;
+            border-bottom: 1px solid #0f3460;
+        }
+        .legend-item:last-child { border-bottom: none; }
+        .legend-code { color: #4ecca3; font-weight: bold; min-width: 100px; }
+        
+        .password-modal {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 30px;
+            width: 350px;
+            text-align: center;
+        }
+        .password-modal h3 { color: #e94560; margin-bottom: 20px; }
+        .password-modal input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .password-modal input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .password-error {
+            color: #e94560;
+            font-size: 12px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        @media (max-width: 900px) {
+            .main-wrapper { overflow-x: auto; }
+            .main-container { min-width: 780px; }
+            .header h1 { font-size: 1.2em; }
+            .header p { font-size: 10px; }
+            .header a { font-size: 12px !important; padding: 8px 15px !important; }
+            .status-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .status-bar .stats { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+            .footer { flex-direction: column; gap: 10px; }
+            .footer > div { width: 100%; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        }
+        
+        @media (max-width: 500px) {
+            .header h1 { font-size: 1em; }
+            .header a { font-size: 11px !important; padding: 6px 12px !important; margin-top: 8px !important; }
+            .status-bar .stats { gap: 5px; font-size: 10px; }
+            .mode-indicator { padding: 3px 8px; font-size: 9px; }
+            .btn { padding: 6px 10px; font-size: 10px; }
+            .btn-legend { padding: 4px 8px; font-size: 9px; }
+            .modal { margin: 10px; padding: 15px; max-height: 90vh; }
+            .legend-grid { grid-template-columns: 1fr; }
+            .password-modal { width: 90%; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Pre-Bid Polish Bid 2026-2027</h1>
+        <p>Bid Year: April 1, 2026 - March 31, 2027 | 12-Day Rotating Pattern</p>
+        <a href="https://deltaairlines-my.sharepoint.com/:x:/r/personal/chris_pawlowski_delta_com/Documents/EXCEL%20WORK%20IN%20PROGRESS/Schedules/The%20Polish%20Bid%20Package%20%202026-2027%20(Version%201.0).xlsx?d=w684f4f1bfadd4986abedb12c8c97d2d8&csf=1&web=1&e=Op63a7" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:12px; padding:10px 20px; background:#217346; color:white; font-size:14px; font-weight:bold; text-decoration:none; border-radius:6px;">📊 Open Excel Spreadsheet (Microsoft 365)</a>
+    </div>
+    
+    <div class="status-bar">
+        <div class="stats">
+            <span style="color:#e94560; font-weight:bold; margin-right:5px;">SSOM:</span>
+            <div class="stat">
+                <span class="stat-label">Taken:</span>
+                <span class="stat-value" id="statTakenSSOM">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Avail:</span>
+                <span class="stat-value available" id="statAvailSSOM">14</span>
+            </div>
+            <span style="color:#e94560; font-weight:bold; margin-left:15px; margin-right:5px;">SOM:</span>
+            <div class="stat">
+                <span class="stat-label">Taken:</span>
+                <span class="stat-value" id="statTakenSOM">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Avail:</span>
+                <span class="stat-value available" id="statAvailSOM">82</span>
+            </div>
+            <button class="btn btn-legend" onclick="showLegend()">Legend</button>
+            <span class="mode-indicator viewer" id="modeIndicator">VIEWER</span>
+        </div>
+        <div class="sync-status">
+            <div class="sync-dot" id="syncDot"></div>
+            <span id="syncText">Connecting...</span>
+            <button class="btn btn-secondary" onclick="loadFromCloud()" style="padding:3px 8px; font-size:10px; margin-left:5px;">Refresh</button>
+            <span id="npointIdDisplay" style="color:#555; font-size:9px; margin-left:5px; cursor:pointer;" onclick="showNpointId()"></span>
+        </div>
+    </div>
+    
+    <div class="main-wrapper">
+        <div class="main-container">
+            <div class="panel">
+                <div class="panel-header">Seniority List</div>
+                <div class="panel-content" id="seniorityPanel">
+                    <div class="entry-header">
+                        <span>#</span>
+                        <span>Name</span>
+                        <span>Line</span>
+                        <span></span>
+                    </div>
+                    <div class="group-title">SSOM (14)</div>
+                    <div id="group1List"></div>
+                    <div class="group-title">SOM (82)</div>
+                    <div id="group2List"></div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">All Lines</div>
+                <div class="panel-content" id="linesPanel">
+                    <div class="lines-holiday-subheader">
+                        <span class="spacer"></span>
+                        <span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="lines-holiday-subheader">
+                        <span class="spacer"></span>
+                        <span></span><span></span><span></span><span>LABOR</span>
+                        <span>XMAS</span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span>NYD</span>
+                    </div>
+                    <div class="lines-holiday-subheader">
+                        <span class="spacer"></span>
+                        <span>SUPER</span><span>EAST2</span><span>STPAT</span><span>MOM</span>
+                        <span>EAST1</span><span></span><span>MEMOR</span><span></span>
+                        <span></span><span>DAD</span><span>4TH</span><span>THX</span>
+                    </div>
+                    <div class="lines-header">
+                        <span>Line</span>
+                        <span>Desc</span>
+                        <span>Bidder</span>
+                        <span>1</span><span>2</span><span>3</span><span>4</span>
+                        <span>5</span><span>6</span><span>7</span><span>8</span>
+                        <span>9</span><span>10</span><span>11</span><span>12</span>
+                    </div>
+                    <div id="allLinesList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div>
+            <button class="btn btn-secondary" onclick="clearAll()" id="clearBtn" disabled>Clear All</button>
+            <button class="btn btn-secondary" onclick="showSetupModal()" id="setupBtn" style="display:none;">Setup Cloud</button>
+        </div>
+        <div>
+            <button class="btn btn-admin" onclick="showPasswordModal()" id="adminBtn">Admin Login</button>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="passwordModal">
+        <div class="password-modal">
+            <h3>🔐 Admin Login</h3>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">Enter password to enable editing</p>
+            <input type="password" id="passwordInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()">
+            <div class="password-error" id="passwordError">Incorrect password</div>
+            <button class="btn btn-primary" onclick="checkPassword()" style="width:100%; padding:12px;">Login</button>
+            <button class="btn btn-secondary" onclick="hidePasswordModal()" style="width:100%; padding:12px; margin-top:10px;">Cancel</button>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="legendModal" onclick="hideLegend()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="hideLegend()">Close</button>
+            <h3>Legend</h3>
+            <div class="legend-grid">
+                <div class="legend-section">
+                    <h4>Bridge Desks</h4>
+                    <div class="legend-item"><span class="legend-code">N</span><span>321NEO</span></div>
+                    <div class="legend-item"><span class="legend-code">O</span><span>717*</span></div>
+                    <div class="legend-item"><span class="legend-code">Q</span><span>B738/B73R/B73J</span></div>
+                    <div class="legend-item"><span class="legend-code">R</span><span>A220</span></div>
+                    <div class="legend-item"><span class="legend-code">S</span><span>B739</span></div>
+                    <div class="legend-item"><span class="legend-code">U</span><span>B763/764</span></div>
+                    <div class="legend-item"><span class="legend-code">V</span><span>A321</span></div>
+                    <div class="legend-item"><span class="legend-code">W</span><span>B757</span></div>
+                    <div class="legend-item"><span class="legend-code">X</span><span>A319/A320</span></div>
+                    <div class="legend-item"><span class="legend-code">Y</span><span>A330/A350</span></div>
+                </div>
+                <div class="legend-section">
+                    <h4>SPT Desks</h4>
+                    <div class="legend-item"><span class="legend-code">C/D/E</span><span>Terminal</span></div>
+                    <div class="legend-item"><span class="legend-code">F</span><span>Routes</span></div>
+                    <div class="legend-item"><span class="legend-code">G</span><span>Enroute</span></div>
+                    <div class="legend-item"><span class="legend-code">H</span><span>Surface</span></div>
+                    <div class="legend-item"><span class="legend-code">J/K</span><span>Regional</span></div>
+                </div>
+                <div class="legend-section">
+                    <h4>SSOM Desks</h4>
+                    <div class="legend-item"><span class="legend-code">A/B</span><span>SSOM SPT</span></div>
+                    <div class="legend-item"><span class="legend-code">M/Z</span><span>SSOM Bridge</span></div>
+                </div>
+                <div class="legend-section">
+                    <h4>2026-2027 Holidays</h4>
+                    <div class="legend-item"><span class="legend-code">Pattern day 1</span><span>Super Bowl</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 2</span><span>Easter 2</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 3</span><span>St. Patrick's</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 4</span><span>Labor, Mom</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 5</span><span>Xmas, Easter 1</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 7</span><span>Memorial</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 10</span><span>Father's Day</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 11</span><span>July 4th</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 12</span><span>NYD, Thanksgiving</span></div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #0f3460; font-size: 11px; color: #888;">
+                * May receive other fleets depending on daily workload of other desks
+            </div>
+        </div>
+    </div>
+    
+    <!-- Setup Modal for npoint ID -->
+    <div class="modal-overlay" id="setupModal">
+        <div class="password-modal" style="width:400px;">
+            <h3>☁️ Cloud Setup</h3>
+            <p style="color:#888; font-size:12px; margin-bottom:10px;">
+                <strong>Step 1:</strong> Go to <a href="https://www.npoint.io/" target="_blank" style="color:#4ecca3;">npoint.io</a> and click "Create JSON Bin"
+            </p>
+            <p style="color:#888; font-size:12px; margin-bottom:10px;">
+                <strong>Step 2:</strong> Paste this as the contents:<br>
+                <code style="background:#0f3460; padding:3px 6px; border-radius:3px; font-size:11px;">{"assignments":{}}</code>
+            </p>
+            <p style="color:#888; font-size:12px; margin-bottom:10px;">
+                <strong>Step 3:</strong> Click Save, then copy the ID from the URL<br>
+                <span style="font-size:10px;">(e.g., from api.npoint.io/<strong style="color:#4ecca3;">abc123def</strong>)</span>
+            </p>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">
+                <strong>Step 4:</strong> Paste the ID below:
+            </p>
+            <input type="text" id="npointInput" placeholder="Paste npoint ID here" style="font-family:monospace;">
+            <button class="btn btn-primary" onclick="setupNpoint()" style="width:100%; padding:12px;">Connect</button>
+            <button class="btn btn-secondary" onclick="hideSetupModal()" style="width:100%; padding:12px; margin-top:10px;">Cancel</button>
+        </div>
+    </div>
+    
+    <script>
+    const ADMIN_PASSWORD = 'Poiuytrewq2357#';
+    
+    // npoint.io storage - reads are FREE and unlimited!
+    let NPOINT_ID = localStorage.getItem('polish_bid_npoint_id') || null;
+    
+    const COLOR_MAP = {
+        1: '#FFC000',
+        2: '#00FFFF',
+        3: '#00B0F0',
+        4: '#FF0000',
+        5: '#FFCCFF',
+        6: '#C0C0C0',
+        7: '#FFFF00',
+        8: '#00FF00',
+        9: '#FF66FF',
+        99: '#7030A0',
+    };
+    const LIGHT_TEXT_CODES = [4, 99];
+    
+    const GROUP1 = [{"nbr": 1, "name": "COST, BOB"}, {"nbr": 2, "name": "BRET, KEN"}, {"nbr": 3, "name": "ASTL, JOE"}, {"nbr": 4, "name": "PAWL, CHR"}, {"nbr": 5, "name": "BELF, VIN"}, {"nbr": 6, "name": "JOHN, BRI"}, {"nbr": 7, "name": "SMIT, DAV"}, {"nbr": 8, "name": "CAMP, KEV"}, {"nbr": 9, "name": "RECK, JAS"}, {"nbr": 10, "name": "DONA, JEF"}, {"nbr": 11, "name": "ADAM, MAR"}, {"nbr": 12, "name": "SCHA, DAV"}, {"nbr": 13, "name": "EMER, JES"}, {"nbr": 14, "name": "GRAF, BEN"}];
+    const GROUP2 = [{"nbr": 1, "name": "BIRD, DAN"}, {"nbr": 2, "name": "FRAN, DAV"}, {"nbr": 3, "name": "CHAR, CAR"}, {"nbr": 4, "name": "SPRA, PER"}, {"nbr": 5, "name": "OLSE, ED"}, {"nbr": 6, "name": "HARR, JIM"}, {"nbr": 7, "name": "BAIL, RIC"}, {"nbr": 8, "name": "CLAR, JUD"}, {"nbr": 9, "name": "GWIN, BRI"}, {"nbr": 10, "name": "DANI, JEF"}, {"nbr": 11, "name": "SMIT, BAR"}, {"nbr": 12, "name": "RIEL, WAL"}, {"nbr": 13, "name": "ROHL, MIK"}, {"nbr": 14, "name": "HOUC, DAV"}, {"nbr": 15, "name": "STAN, LAN"}, {"nbr": 16, "name": "HOBS, MAR"}, {"nbr": 17, "name": "HOFF, DAN"}, {"nbr": 18, "name": "BAKE, ERI"}, {"nbr": 19, "name": "PUSZ, JIM"}, {"nbr": 20, "name": "HARA, DUD"}, {"nbr": 21, "name": "BATT, JAI"}, {"nbr": 22, "name": "SUCH, CHR"}, {"nbr": 23, "name": "VOGT, DAV"}, {"nbr": 24, "name": "HURL, JAC"}, {"nbr": 25, "name": "MCEL, KEV"}, {"nbr": 26, "name": "REED, MIK"}, {"nbr": 27, "name": "FUJI, ROX"}, {"nbr": 28, "name": "O'DO, BRI"}, {"nbr": 29, "name": "HAMI, ADA"}, {"nbr": 30, "name": "GEIG, GEO"}, {"nbr": 31, "name": "O'DO, WEN"}, {"nbr": 32, "name": "ESTE, KAT"}, {"nbr": 33, "name": "RINE, RAL"}, {"nbr": 34, "name": "ROMA, KEN"}, {"nbr": 35, "name": "HALL, CHA"}, {"nbr": 36, "name": "LONG, AND"}, {"nbr": 37, "name": "PAPP, ROB"}, {"nbr": 38, "name": "GAGN, JUL"}, {"nbr": 39, "name": "MALE, TOD"}, {"nbr": 40, "name": "MISN, HUO"}, {"nbr": 41, "name": "O'BR, DAV"}, {"nbr": 42, "name": "DELA, WIL"}, {"nbr": 43, "name": "BETC, MIC"}, {"nbr": 44, "name": "JOLL, DAV"}, {"nbr": 45, "name": "TOZZ, GIN"}, {"nbr": 46, "name": "MCMO, SHA"}, {"nbr": 47, "name": "RUCK, RIC"}, {"nbr": 48, "name": "WARN, DEE"}, {"nbr": 49, "name": "HENE, AND"}, {"nbr": 50, "name": "OSOJ, MER"}, {"nbr": 51, "name": "FOLE, RYA"}, {"nbr": 52, "name": "HILL, SEA"}, {"nbr": 53, "name": "MUGE, JEN"}, {"nbr": 54, "name": "DENM, JOH"}, {"nbr": 55, "name": "MAKI, RYA"}, {"nbr": 56, "name": "MCGR, DEA"}, {"nbr": 57, "name": "BRAD, LAT"}, {"nbr": 58, "name": "HATL, HER"}, {"nbr": 59, "name": "HAYE, JOH"}, {"nbr": 60, "name": "HARR, ELE"}, {"nbr": 61, "name": "PIOT, MAR"}, {"nbr": 62, "name": "YAGE, LAR"}, {"nbr": 63, "name": "CART, WES"}, {"nbr": 64, "name": "GAUL, PET"}, {"nbr": 65, "name": "BOST, GRE"}, {"nbr": 66, "name": "HINT, SEL"}, {"nbr": 67, "name": "TJAD, AND"}, {"nbr": 68, "name": "GEUR, STE"}, {"nbr": 69, "name": "KENT, AND"}, {"nbr": 70, "name": "SAMU, CHA"}, {"nbr": 71, "name": "CORN, DAN"}, {"nbr": 72, "name": "FATT, KEL"}, {"nbr": 73, "name": "STAR, JIM"}, {"nbr": 74, "name": "ALLE, JOS"}, {"nbr": 75, "name": "LATT, WIL"}, {"nbr": 76, "name": "TURI, LAU"}, {"nbr": 77, "name": "AUST, STE"}, {"nbr": 78, "name": "RAIN, MIK"}, {"nbr": 79, "name": "MILL, CRA"}, {"nbr": 80, "name": "LITT, CLA"}, {"nbr": 81, "name": "PIER, MAR"}, {"nbr": 82, "name": "HARN, ZAC"}];
+    const ANNUAL_BID = [{"lineNbr": "1", "lineDesc": "1 SSOM", "days": ["--", "--", "E05A", "E05A", "E05A", "--", "--", "--", "E05A", "E05A", "--", "--"], "dayCodes": [8, 8, 1, 1, 1, 8, 8, 8, 1, 1, 8, 8], "lineColorCode": 1}, {"lineNbr": "2", "lineDesc": "2 SSOM", "days": ["E05A", "E05A", "--", "--", "--", "E05A", "E05A", "E05A", "--", "--", "--", "--"], "dayCodes": [1, 1, 8, 8, 8, 1, 1, 1, 8, 8, 8, 8], "lineColorCode": 1}, {"lineNbr": "3", "lineDesc": "3 SSOM", "days": ["--", "--", "A06M", "A06M", "A06M", "--", "--", "--", "A06M", "A06M", "--", "--"], "dayCodes": [8, 8, 1, 1, 1, 8, 8, 8, 1, 1, 8, 8], "lineColorCode": 1}, {"lineNbr": "4", "lineDesc": "4 SSOM", "days": ["A06M", "A06M", "--", "--", "--", "A06M", "A06M", "A06M", "--", "--", "--", "--"], "dayCodes": [1, 1, 8, 8, 8, 1, 1, 1, 8, 8, 8, 8], "lineColorCode": 1}, {"lineNbr": "5", "lineDesc": "5 SSOM", "days": ["--", "A09Z", "A09Z", "--", "--", "--", "--", "A09Z", "A09Z", "A09Z", "--", "--"], "dayCodes": [8, 1, 1, 8, 8, 8, 8, 1, 1, 1, 8, 8], "lineColorCode": 1}, {"lineNbr": "6", "lineDesc": "6 SSOM", "days": ["A09Z", "--", "--", "--", "--", "A09Z", "A09Z", "--", "--", "--", "A09Z", "A09Z"], "dayCodes": [1, 8, 8, 8, 8, 1, 1, 8, 8, 8, 1, 1], "lineColorCode": 1}, {"lineNbr": "7", "lineDesc": "7 SSOM", "days": ["--", "--", "--", "P12B", "P12B", "--", "--", "--", "--", "P12B", "P12B", "P12B"], "dayCodes": [8, 8, 8, 1, 1, 8, 8, 8, 8, 1, 1, 1], "lineColorCode": 1}, {"lineNbr": "8", "lineDesc": "8 SSOM", "days": ["P12B", "P12B", "P12B", "--", "--", "--", "--", "P12B", "P12B", "--", "--", "--"], "dayCodes": [1, 1, 1, 8, 8, 8, 8, 1, 1, 8, 8, 8], "lineColorCode": 1}, {"lineNbr": "9", "lineDesc": "9 SSOM", "days": ["--", "--", "--", "--", "A09Z", "P12B", "P12B", "--", "--", "--", "E05A", "E05A"], "dayCodes": [8, 8, 8, 8, 1, 1, 1, 8, 8, 8, 1, 1], "lineColorCode": 99}, {"lineNbr": "10", "lineDesc": "10 SSOM", "days": ["--", "--", "--", "A09Z", "M18M", "M18M", "--", "--", "--", "--", "A06M", "A06M"], "dayCodes": [8, 8, 8, 1, 6, 6, 8, 8, 8, 8, 1, 1], "lineColorCode": 99}, {"lineNbr": "11", "lineDesc": "11 SSOM", "days": ["--", "--", "M18M", "M18M", "--", "--", "--", "--", "M18M", "M18M", "M18M", "--"], "dayCodes": [8, 8, 6, 6, 8, 8, 8, 8, 6, 6, 6, 8], "lineColorCode": 6}, {"lineNbr": "12", "lineDesc": "12 SSOM", "days": ["M18M", "M18M", "--", "--", "--", "--", "M18M", "M18M", "--", "--", "--", "M18M"], "dayCodes": [6, 6, 8, 8, 8, 8, 6, 6, 8, 8, 8, 6], "lineColorCode": 6}, {"lineNbr": "13", "lineDesc": "13 SSOM", "days": ["--", "--", "XXX", "XXX", "--", "--", "--", "XXX", "XXX", "XXX", "--", "--"], "dayCodes": [8, 8, 7, 7, 8, 8, 8, 7, 7, 7, 8, 8], "lineColorCode": 7}, {"lineNbr": "14", "lineDesc": "14 SSOM", "days": ["--", "--", "--", "--", "XXX", "XXX", "XXX", "--", "--", "--", "XXX", "XXX"], "dayCodes": [8, 8, 8, 8, 7, 7, 7, 8, 8, 8, 7, 7], "lineColorCode": 7}, {"lineNbr": "15", "lineDesc": "1 SOM", "days": ["A06C", "--", "--", "--", "--", "A06C", "A06C", "A06C", "--", "--", "--", "A06C"], "dayCodes": [2, 8, 8, 8, 8, 2, 2, 2, 8, 8, 8, 2], "lineColorCode": 2}, {"lineNbr": "16", "lineDesc": "2 SOM", "days": ["--", "--", "--", "A06C", "A06C", "--", "--", "--", "A06C", "A06C", "A06C", "--"], "dayCodes": [8, 8, 8, 2, 2, 8, 8, 8, 2, 2, 2, 8], "lineColorCode": 2}, {"lineNbr": "17", "lineDesc": "3 SOM", "days": ["--", "--", "A06F", "A06F", "A06F", "--", "--", "--", "--", "A06F", "A06F", "--"], "dayCodes": [8, 8, 3, 3, 3, 8, 8, 8, 8, 3, 3, 8], "lineColorCode": 3}, {"lineNbr": "18", "lineDesc": "4 SOM", "days": ["A06F", "A06F", "--", "--", "--", "A06F", "A06F", "--", "--", "--", "--", "A06F"], "dayCodes": [3, 3, 8, 8, 8, 3, 3, 8, 8, 8, 8, 3], "lineColorCode": 3}, {"lineNbr": "19", "lineDesc": "5 SOM", "days": ["A06J", "--", "--", "--", "A06J", "A06J", "--", "--", "--", "--", "A06J", "A06J"], "dayCodes": [4, 8, 8, 8, 4, 4, 8, 8, 8, 8, 4, 4], "lineColorCode": 4}, {"lineNbr": "20", "lineDesc": "6 SOM", "days": ["--", "A06J", "A06J", "A06J", "--", "--", "--", "--", "A06J", "A06J", "--", "--"], "dayCodes": [8, 4, 4, 4, 8, 8, 8, 8, 4, 4, 8, 8], "lineColorCode": 4}, {"lineNbr": "21", "lineDesc": "7 SOM", "days": ["A09D", "--", "--", "--", "A09D", "A09D", "--", "--", "--", "--", "A09D", "A09D"], "dayCodes": [2, 8, 8, 8, 2, 2, 8, 8, 8, 8, 2, 2], "lineColorCode": 2}, {"lineNbr": "22", "lineDesc": "8 SOM", "days": ["--", "A09D", "A09D", "A09D", "--", "--", "--", "--", "A09D", "A09D", "--", "--"], "dayCodes": [8, 2, 2, 2, 8, 8, 8, 8, 2, 2, 8, 8], "lineColorCode": 2}, {"lineNbr": "23", "lineDesc": "9 SOM", "days": ["--", "--", "P12H", "P12H", "--", "--", "--", "P12H", "P12H", "P12H", "--", "--"], "dayCodes": [8, 8, 3, 3, 8, 8, 8, 3, 3, 3, 8, 8], "lineColorCode": 3}, {"lineNbr": "24", "lineDesc": "10 SOM", "days": ["--", "--", "--", "--", "P12H", "P12H", "P12H", "--", "--", "--", "P12H", "P12H"], "dayCodes": [8, 8, 8, 8, 3, 3, 3, 8, 8, 8, 3, 3], "lineColorCode": 3}, {"lineNbr": "25", "lineDesc": "11 SOM", "days": ["P12G", "P12G", "P12G", "--", "--", "--", "P12G", "P12G", "--", "--", "--", "--"], "dayCodes": [3, 3, 3, 8, 8, 8, 3, 3, 8, 8, 8, 8], "lineColorCode": 3}, {"lineNbr": "26", "lineDesc": "12 SOM", "days": ["--", "--", "--", "P12G", "P12G", "P12G", "--", "--", "--", "--", "P12G", "P12G"], "dayCodes": [8, 8, 8, 3, 3, 3, 8, 8, 8, 8, 3, 3], "lineColorCode": 3}, {"lineNbr": "27", "lineDesc": "13 SOM", "days": ["P12K", "P12K", "--", "--", "--", "--", "P12K", "P12K", "P12K", "--", "--", "--"], "dayCodes": [4, 4, 8, 8, 8, 8, 4, 4, 4, 8, 8, 8], "lineColorCode": 4}, {"lineNbr": "28", "lineDesc": "14 SOM", "days": ["--", "--", "--", "--", "P12K", "P12K", "--", "--", "--", "P12K", "P12K", "P12K"], "dayCodes": [8, 8, 8, 8, 4, 4, 8, 8, 8, 4, 4, 4], "lineColorCode": 4}, {"lineNbr": "29", "lineDesc": "15 SOM", "days": ["--", "--", "P12E", "P12E", "P12E", "--", "--", "--", "P12E", "P12E", "--", "--"], "dayCodes": [8, 8, 2, 2, 2, 8, 8, 8, 2, 2, 8, 8], "lineColorCode": 2}, {"lineNbr": "30", "lineDesc": "16 SOM", "days": ["P12E", "P12E", "--", "--", "--", "P12E", "P12E", "P12E", "--", "--", "--", "--"], "dayCodes": [2, 2, 8, 8, 8, 2, 2, 2, 8, 8, 8, 8], "lineColorCode": 2}, {"lineNbr": "31", "lineDesc": "17 SOM", "days": ["P12H", "P12H", "--", "--", "--", "--", "A09D", "A09D", "--", "--", "--", "P12E"], "dayCodes": [3, 3, 8, 8, 8, 8, 2, 2, 8, 8, 8, 2], "lineColorCode": 99}, {"lineNbr": "32", "lineDesc": "18 SOM", "days": ["--", "--", "P12K", "P12K", "--", "--", "--", "--", "P12G", "P12G", "P12E", "--"], "dayCodes": [8, 8, 4, 4, 8, 8, 8, 8, 3, 3, 2, 8], "lineColorCode": 99}, {"lineNbr": "33", "lineDesc": "19 SOM", "days": ["--", "A06C", "A06C", "--", "--", "--", "A06J", "A06F", "A06F", "--", "--", "--"], "dayCodes": [8, 2, 2, 8, 8, 8, 4, 3, 3, 8, 8, 8], "lineColorCode": 99}, {"lineNbr": "34", "lineDesc": "20 SOM", "days": ["--", "A10O", "A10O", "--", "--", "--", "--", "A10O", "A10O", "A10O", "--", "--"], "dayCodes": [8, 9, 9, 8, 8, 8, 8, 9, 9, 9, 8, 8], "lineColorCode": 9}, {"lineNbr": "35", "lineDesc": "21 SOM", "days": ["A10O", "--", "--", "--", "--", "A10O", "A10O", "--", "--", "--", "A10O", "A10O"], "dayCodes": [9, 8, 8, 8, 8, 9, 9, 8, 8, 8, 9, 9], "lineColorCode": 9}, {"lineNbr": "36", "lineDesc": "22 SOM", "days": ["A06N", "A06N", "A06N", "--", "--", "--", "A06N", "A06N", "--", "--", "--", "--"], "dayCodes": [5, 5, 5, 8, 8, 8, 5, 5, 8, 8, 8, 8], "lineColorCode": 5}, {"lineNbr": "37", "lineDesc": "23 SOM", "days": ["--", "--", "--", "A06N", "A06N", "A06N", "--", "--", "--", "--", "A06N", "A06N"], "dayCodes": [8, 8, 8, 5, 5, 5, 8, 8, 8, 8, 5, 5], "lineColorCode": 5}, {"lineNbr": "38", "lineDesc": "24 SOM", "days": ["A06Q", "A06Q", "--", "--", "--", "--", "A06Q", "A06Q", "A06Q", "--", "--", "--"], "dayCodes": [5, 5, 8, 8, 8, 8, 5, 5, 5, 8, 8, 8], "lineColorCode": 5}, {"lineNbr": "39", "lineDesc": "25 SOM", "days": ["--", "--", "--", "--", "A06Q", "A06Q", "--", "--", "--", "A06Q", "A06Q", "A06Q"], "dayCodes": [8, 8, 8, 8, 5, 5, 8, 8, 8, 5, 5, 5], "lineColorCode": 5}, {"lineNbr": "40", "lineDesc": "26 SOM", "days": ["A06R", "--", "--", "--", "--", "A06R", "A06R", "A06R", "--", "--", "--", "A06R"], "dayCodes": [5, 8, 8, 8, 8, 5, 5, 5, 8, 8, 8, 5], "lineColorCode": 5}, {"lineNbr": "41", "lineDesc": "27 SOM", "days": ["--", "--", "--", "A06R", "A06R", "--", "--", "--", "A06R", "A06R", "A06R", "--"], "dayCodes": [8, 8, 8, 5, 5, 8, 8, 8, 5, 5, 5, 8], "lineColorCode": 5}, {"lineNbr": "42", "lineDesc": "28 SOM", "days": ["A06S", "A06S", "--", "--", "--", "A06S", "A06S", "--", "--", "--", "--", "A06S"], "dayCodes": [5, 5, 8, 8, 8, 5, 5, 8, 8, 8, 8, 5], "lineColorCode": 5}, {"lineNbr": "43", "lineDesc": "29 SOM", "days": ["--", "--", "A06S", "A06S", "A06S", "--", "--", "--", "--", "A06S", "A06S", "--"], "dayCodes": [8, 8, 5, 5, 5, 8, 8, 8, 8, 5, 5, 8], "lineColorCode": 5}, {"lineNbr": "44", "lineDesc": "30 SOM", "days": ["--", "A06U", "A06U", "--", "--", "--", "--", "A06U", "A06U", "A06U", "--", "--"], "dayCodes": [8, 5, 5, 8, 8, 8, 8, 5, 5, 5, 8, 8], "lineColorCode": 5}, {"lineNbr": "45", "lineDesc": "31 SOM", "days": ["A06U", "--", "--", "--", "--", "A06U", "A06U", "--", "--", "--", "A06U", "A06U"], "dayCodes": [5, 8, 8, 8, 8, 5, 5, 8, 8, 8, 5, 5], "lineColorCode": 5}, {"lineNbr": "46", "lineDesc": "32 SOM", "days": ["A06V", "A06V", "A06V", "--", "--", "--", "A06V", "A06V", "--", "--", "--", "--"], "dayCodes": [5, 5, 5, 8, 8, 8, 5, 5, 8, 8, 8, 8], "lineColorCode": 5}, {"lineNbr": "47", "lineDesc": "33 SOM", "days": ["--", "--", "--", "A06V", "A06V", "A06V", "--", "--", "--", "--", "A06V", "A06V"], "dayCodes": [8, 8, 8, 5, 5, 5, 8, 8, 8, 8, 5, 5], "lineColorCode": 5}, {"lineNbr": "48", "lineDesc": "34 SOM", "days": ["--", "A06W", "A06W", "--", "--", "--", "--", "A06W", "A06W", "A06W", "--", "--"], "dayCodes": [8, 5, 5, 8, 8, 8, 8, 5, 5, 5, 8, 8], "lineColorCode": 5}, {"lineNbr": "49", "lineDesc": "35 SOM", "days": ["A06W", "--", "--", "--", "--", "A06W", "A06W", "--", "--", "--", "A06W", "A06W"], "dayCodes": [5, 8, 8, 8, 8, 5, 5, 8, 8, 8, 5, 5], "lineColorCode": 5}, {"lineNbr": "50", "lineDesc": "36 SOM", "days": ["A06X", "--", "--", "--", "--", "A06X", "A06X", "A06X", "--", "--", "--", "A06X"], "dayCodes": [5, 8, 8, 8, 8, 5, 5, 5, 8, 8, 8, 5], "lineColorCode": 5}, {"lineNbr": "51", "lineDesc": "37 SOM", "days": ["--", "--", "--", "A06X", "A06X", "--", "--", "--", "A06X", "A06X", "A06X", "--"], "dayCodes": [8, 8, 8, 5, 5, 8, 8, 8, 5, 5, 5, 8], "lineColorCode": 5}, {"lineNbr": "52", "lineDesc": "38 SOM", "days": ["A06Y", "A06Y", "A06Y", "--", "--", "--", "A06Y", "A06Y", "--", "--", "--", "--"], "dayCodes": [5, 5, 5, 8, 8, 8, 5, 5, 8, 8, 8, 8], "lineColorCode": 5}, {"lineNbr": "53", "lineDesc": "39 SOM", "days": ["--", "--", "--", "A06Y", "A06Y", "A06Y", "--", "--", "--", "--", "A06Y", "A06Y"], "dayCodes": [8, 8, 8, 5, 5, 5, 8, 8, 8, 8, 5, 5], "lineColorCode": 5}, {"lineNbr": "54", "lineDesc": "40 SOM", "days": ["--", "A06X", "A06X", "--", "--", "--", "--", "A06J", "A06V", "A06V", "--", "--"], "dayCodes": [8, 5, 5, 8, 8, 8, 8, 4, 5, 5, 8, 8], "lineColorCode": 99}, {"lineNbr": "55", "lineDesc": "41 SOM", "days": ["--", "--", "A06R", "A06W", "A06W", "--", "--", "--", "A06N", "A06N", "--", "--"], "dayCodes": [8, 8, 5, 5, 5, 8, 8, 8, 5, 5, 8, 8], "lineColorCode": 99}, {"lineNbr": "56", "lineDesc": "42 SOM", "days": ["--", "A06R", "A06Q", "A06Q", "--", "--", "--", "A06S", "A06S", "--", "--", "--"], "dayCodes": [8, 5, 5, 5, 8, 8, 8, 5, 5, 8, 8, 8], "lineColorCode": 99}, {"lineNbr": "57", "lineDesc": "43 SOM", "days": ["--", "--", "--", "A06U", "A06U", "--", "--", "--", "A06Y", "A06Y", "XX", "--"], "dayCodes": [8, 8, 8, 5, 5, 8, 8, 8, 5, 5, 7, 8], "lineColorCode": 99}, {"lineNbr": "58", "lineDesc": "44 SOM", "days": ["--", "--", "--", "M18N", "M18N", "M18N", "--", "--", "--", "--", "M18N", "M18N"], "dayCodes": [8, 8, 8, 6, 6, 6, 8, 8, 8, 8, 6, 6], "lineColorCode": 6}, {"lineNbr": "59", "lineDesc": "45 SOM", "days": ["M18N", "M18N", "M18N", "--", "--", "--", "M18N", "M18N", "--", "--", "--", "--"], "dayCodes": [6, 6, 6, 8, 8, 8, 6, 6, 8, 8, 8, 8], "lineColorCode": 6}, {"lineNbr": "60", "lineDesc": "46 SOM", "days": ["M18Q", "M18Q", "--", "--", "--", "--", "M18Q", "M18Q", "M18Q", "--", "--", "--"], "dayCodes": [6, 6, 8, 8, 8, 8, 6, 6, 6, 8, 8, 8], "lineColorCode": 6}, {"lineNbr": "61", "lineDesc": "47 SOM", "days": ["--", "--", "--", "--", "M18Q", "M18Q", "--", "--", "--", "M18Q", "M18Q", "M18Q"], "dayCodes": [8, 8, 8, 8, 6, 6, 8, 8, 8, 6, 6, 6], "lineColorCode": 6}, {"lineNbr": "62", "lineDesc": "48 SOM", "days": ["M18R", "--", "--", "--", "--", "M18R", "M18R", "M18R", "--", "--", "--", "M18R"], "dayCodes": [6, 8, 8, 8, 8, 6, 6, 6, 8, 8, 8, 6], "lineColorCode": 6}, {"lineNbr": "63", "lineDesc": "49 SOM", "days": ["--", "--", "--", "M18R", "M18R", "--", "--", "--", "M18R", "M18R", "M18R", "--"], "dayCodes": [8, 8, 8, 6, 6, 8, 8, 8, 6, 6, 6, 8], "lineColorCode": 6}, {"lineNbr": "64", "lineDesc": "50 SOM", "days": ["M18S", "M18S", "--", "--", "--", "M18S", "M18S", "--", "--", "--", "--", "M18S"], "dayCodes": [6, 6, 8, 8, 8, 6, 6, 8, 8, 8, 8, 6], "lineColorCode": 6}, {"lineNbr": "65", "lineDesc": "51 SOM", "days": ["--", "--", "M18S", "M18S", "M18S", "--", "--", "--", "--", "M18S", "M18S", "--"], "dayCodes": [8, 8, 6, 6, 6, 8, 8, 8, 8, 6, 6, 8], "lineColorCode": 6}, {"lineNbr": "66", "lineDesc": "52 SOM", "days": ["--", "--", "M18U", "M18U", "M18U", "--", "--", "--", "M18U", "M18U", "--", "--"], "dayCodes": [8, 8, 6, 6, 6, 8, 8, 8, 6, 6, 8, 8], "lineColorCode": 6}, {"lineNbr": "67", "lineDesc": "53 SOM", "days": ["M18U", "M18U", "--", "--", "--", "M18U", "M18U", "M18U", "--", "--", "--", "--"], "dayCodes": [6, 6, 8, 8, 8, 6, 6, 6, 8, 8, 8, 8], "lineColorCode": 6}, {"lineNbr": "68", "lineDesc": "54 SOM", "days": ["--", "M18V", "M18V", "--", "--", "--", "--", "M18V", "M18V", "M18V", "--", "--"], "dayCodes": [8, 6, 6, 8, 8, 8, 8, 6, 6, 6, 8, 8], "lineColorCode": 6}, {"lineNbr": "69", "lineDesc": "55 SOM", "days": ["M18V", "--", "--", "--", "--", "M18V", "M18V", "--", "--", "--", "M18V", "M18V"], "dayCodes": [6, 8, 8, 8, 8, 6, 6, 8, 8, 8, 6, 6], "lineColorCode": 6}, {"lineNbr": "70", "lineDesc": "56 SOM", "days": ["--", "M18W", "M18W", "--", "--", "--", "--", "M18W", "M18W", "M18W", "--", "--"], "dayCodes": [8, 6, 6, 8, 8, 8, 8, 6, 6, 6, 8, 8], "lineColorCode": 6}, {"lineNbr": "71", "lineDesc": "57 SOM", "days": ["M18W", "--", "--", "--", "--", "M18W", "M18W", "--", "--", "--", "M18W", "M18W"], "dayCodes": [6, 8, 8, 8, 8, 6, 6, 8, 8, 8, 6, 6], "lineColorCode": 6}, {"lineNbr": "72", "lineDesc": "58 SOM", "days": ["--", "M18X", "M18X", "M18X", "--", "--", "--", "M18X", "M18X", "--", "--", "--"], "dayCodes": [8, 6, 6, 6, 8, 8, 8, 6, 6, 8, 8, 8], "lineColorCode": 6}, {"lineNbr": "73", "lineDesc": "59 SOM", "days": ["M18X", "--", "--", "--", "M18X", "M18X", "M18X", "--", "--", "--", "--", "M18X"], "dayCodes": [6, 8, 8, 8, 6, 6, 6, 8, 8, 8, 8, 6], "lineColorCode": 6}, {"lineNbr": "74", "lineDesc": "60 SOM", "days": ["M18Y", "M18Y", "M18Y", "--", "--", "--", "M18Y", "M18Y", "--", "--", "--", "--"], "dayCodes": [6, 6, 6, 8, 8, 8, 6, 6, 8, 8, 8, 8], "lineColorCode": 6}, {"lineNbr": "75", "lineDesc": "61 SOM", "days": ["--", "--", "--", "M18Y", "M18Y", "M18Y", "--", "--", "--", "--", "M18Y", "M18Y"], "dayCodes": [8, 8, 8, 6, 6, 6, 8, 8, 8, 8, 6, 6], "lineColorCode": 6}, {"lineNbr": "76", "lineDesc": "62 SOM", "days": ["--", "--", "--", "M18V", "M18V", "--", "--", "--", "--", "M18X", "M18X", "M18U"], "dayCodes": [8, 8, 8, 6, 6, 8, 8, 8, 8, 6, 6, 6], "lineColorCode": 99}, {"lineNbr": "77", "lineDesc": "63 SOM", "days": ["--", "--", "M18R", "M18W", "M18W", "--", "--", "--", "M18N", "M18N", "--", "--"], "dayCodes": [8, 8, 6, 6, 6, 8, 8, 8, 6, 6, 8, 8], "lineColorCode": 99}, {"lineNbr": "78", "lineDesc": "64 SOM", "days": ["--", "M18R", "M18Q", "M18Q", "--", "--", "--", "M18S", "M18S", "--", "--", "--"], "dayCodes": [8, 6, 6, 6, 8, 8, 8, 6, 6, 8, 8, 8], "lineColorCode": 99}, {"lineNbr": "79", "lineDesc": "65 SOM", "days": ["--", "--", "--", "A10O", "A10O", "--", "--", "--", "M18Y", "M18Y", "M18U", "--"], "dayCodes": [8, 8, 8, 9, 9, 8, 8, 8, 6, 6, 6, 8], "lineColorCode": 99}, {"lineNbr": "80", "lineDesc": "66 SOM", "days": ["--", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--"], "dayCodes": [8, 7, 7, 7, 8, 8, 8, 8, 7, 7, 8, 8], "lineColorCode": 7}, {"lineNbr": "81", "lineDesc": "67 SOM", "days": ["--", "--", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "--"], "dayCodes": [8, 8, 7, 7, 7, 8, 8, 8, 8, 7, 7, 8], "lineColorCode": 7}, {"lineNbr": "82", "lineDesc": "68 SOM", "days": ["--", "--", "--", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "XX"], "dayCodes": [8, 8, 8, 7, 7, 7, 8, 8, 8, 8, 7, 7], "lineColorCode": 7}, {"lineNbr": "83", "lineDesc": "69 SOM", "days": ["XX", "--", "--", "--", "XX", "XX", "XX", "--", "--", "--", "--", "XX"], "dayCodes": [7, 8, 8, 8, 7, 7, 7, 8, 8, 8, 8, 7], "lineColorCode": 7}, {"lineNbr": "84", "lineDesc": "70 SOM", "days": ["XX", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "--", "--", "--"], "dayCodes": [7, 7, 8, 8, 8, 7, 7, 7, 8, 8, 8, 8], "lineColorCode": 7}, {"lineNbr": "85", "lineDesc": "71 SOM", "days": ["--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "--", "--"], "dayCodes": [8, 7, 7, 8, 8, 8, 7, 7, 7, 8, 8, 8], "lineColorCode": 7}, {"lineNbr": "86", "lineDesc": "72 SOM", "days": ["--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "--"], "dayCodes": [8, 8, 7, 7, 8, 8, 8, 7, 7, 7, 8, 8], "lineColorCode": 7}, {"lineNbr": "87", "lineDesc": "73 SOM", "days": ["--", "--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "--"], "dayCodes": [8, 8, 8, 7, 7, 8, 8, 8, 7, 7, 7, 8], "lineColorCode": 7}, {"lineNbr": "88", "lineDesc": "74 SOM", "days": ["--", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX"], "dayCodes": [8, 8, 8, 8, 7, 7, 8, 8, 8, 7, 7, 7], "lineColorCode": 7}, {"lineNbr": "89", "lineDesc": "75 SOM", "days": ["XX", "--", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX", "XX"], "dayCodes": [7, 8, 8, 8, 8, 7, 7, 8, 8, 8, 7, 7], "lineColorCode": 7}, {"lineNbr": "90", "lineDesc": "76 SOM", "days": ["XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX"], "dayCodes": [7, 7, 8, 8, 8, 8, 7, 7, 8, 8, 8, 7], "lineColorCode": 7}, {"lineNbr": "91", "lineDesc": "77 SOM", "days": ["XX", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--", "--"], "dayCodes": [7, 7, 7, 8, 8, 8, 8, 7, 7, 8, 8, 8], "lineColorCode": 7}, {"lineNbr": "92", "lineDesc": "78 SOM", "days": ["--", "XX", "XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--"], "dayCodes": [8, 7, 7, 7, 8, 8, 8, 8, 7, 7, 8, 8], "lineColorCode": 7}, {"lineNbr": "93", "lineDesc": "79 SOM", "days": ["XX", "--", "--", "--", "XX", "XX", "XX", "--", "--", "--", "--", "XX"], "dayCodes": [7, 8, 8, 8, 7, 7, 7, 8, 8, 8, 8, 7], "lineColorCode": 7}, {"lineNbr": "94", "lineDesc": "80 SOM", "days": ["--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX", "--", "--"], "dayCodes": [8, 8, 7, 7, 8, 8, 8, 7, 7, 7, 8, 8], "lineColorCode": 7}, {"lineNbr": "95", "lineDesc": "81 SOM", "days": ["--", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX", "XX", "XX"], "dayCodes": [8, 8, 8, 8, 7, 7, 8, 8, 8, 7, 7, 7], "lineColorCode": 7}, {"lineNbr": "96", "lineDesc": "82 SOM", "days": ["XX", "XX", "--", "--", "--", "--", "XX", "XX", "--", "--", "--", "XX"], "dayCodes": [7, 7, 8, 8, 8, 8, 7, 7, 8, 8, 8, 7], "lineColorCode": 7}];
+    
+    let assignments = {};
+    let isAdmin = false;
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (sessionStorage.getItem('polish_bid_admin') === 'true') {
+            isAdmin = true;
+            enableAdminMode();
+        }
+        updateNpointDisplay();
+        await initCloud();
+        renderAll();
+    });
+    
+    async function initCloud() {
+        if (NPOINT_ID) {
+            await loadFromCloud();
+        } else {
+            setSyncStatus('ok', 'No cloud storage yet');
+        }
+    }
+    
+    async function loadFromCloud() {
+        if (!NPOINT_ID) return;
+        
+        setSyncStatus('syncing', 'Loading...');
+        try {
+            const url = `https://api.npoint.io/${NPOINT_ID}`;
+            console.log('Loading from:', url);
+            
+            const response = await fetch(url);
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Data received:', data);
+            
+            if (data && typeof data === 'object') {
+                assignments = data.assignments || {};
+                renderAll();
+                const time = new Date().toLocaleTimeString();
+                setSyncStatus('ok', `Loaded ${time}`);
+            } else {
+                setSyncStatus('ok', 'Empty data');
+            }
+        } catch (err) {
+            console.error('Failed to load from cloud:', err);
+            setSyncStatus('error', 'Load failed: ' + err.message);
+        }
+    }
+    
+    async function saveToCloud() {
+        if (!isAdmin) return;
+        
+        if (!NPOINT_ID) {
+            alert('Please set up cloud storage first (click "Setup Cloud" button)');
+            return;
+        }
+        
+        setSyncStatus('syncing', 'Saving...');
+        try {
+            await fetch(`https://api.npoint.io/${NPOINT_ID}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    assignments: assignments, 
+                    lastUpdated: new Date().toISOString() 
+                })
+            });
+            const time = new Date().toLocaleTimeString();
+            setSyncStatus('ok', `Saved ${time}`);
+        } catch (err) {
+            console.error('Failed to save to cloud:', err);
+            setSyncStatus('error', 'Save failed');
+        }
+    }
+    
+    function setSyncStatus(status, text) {
+        const dot = document.getElementById('syncDot');
+        const txt = document.getElementById('syncText');
+        dot.className = 'sync-dot' + (status === 'syncing' ? ' syncing' : status === 'error' ? ' error' : '');
+        txt.textContent = text;
+    }
+    
+    function saveLocal() {
+        localStorage.setItem('polish_bid_assignments_v4', JSON.stringify(assignments));
+    }
+    
+    function showPasswordModal() {
+        document.getElementById('passwordModal').classList.add('show');
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordError').style.display = 'none';
+        document.getElementById('passwordInput').focus();
+    }
+    
+    function hidePasswordModal() {
+        document.getElementById('passwordModal').classList.remove('show');
+    }
+    
+    function checkPassword() {
+        const input = document.getElementById('passwordInput').value;
+        if (input === ADMIN_PASSWORD) {
+            isAdmin = true;
+            sessionStorage.setItem('polish_bid_admin', 'true');
+            hidePasswordModal();
+            enableAdminMode();
+            renderAll();
+        } else {
+            document.getElementById('passwordError').style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+        }
+    }
+    
+    function enableAdminMode() {
+        document.getElementById('modeIndicator').textContent = 'ADMIN';
+        document.getElementById('modeIndicator').className = 'mode-indicator admin';
+        document.getElementById('adminBtn').textContent = 'Logout';
+        document.getElementById('adminBtn').onclick = logout;
+        document.getElementById('clearBtn').disabled = false;
+        document.getElementById('setupBtn').style.display = NPOINT_ID ? 'none' : 'inline-block';
+        updateNpointDisplay();
+    }
+    
+    function logout() {
+        isAdmin = false;
+        sessionStorage.removeItem('polish_bid_admin');
+        document.getElementById('modeIndicator').textContent = 'VIEWER';
+        document.getElementById('modeIndicator').className = 'mode-indicator viewer';
+        document.getElementById('adminBtn').textContent = 'Admin Login';
+        document.getElementById('adminBtn').onclick = showPasswordModal;
+        document.getElementById('clearBtn').disabled = true;
+        document.getElementById('setupBtn').style.display = 'none';
+        updateNpointDisplay();
+        renderAll();
+    }
+    
+    function renderAll() {
+        renderGroup(GROUP1, 'group1List', 'g1');
+        renderGroup(GROUP2, 'group2List', 'g2');
+        renderAllLines();
+        updateStats();
+    }
+    
+    function getLineToBidder() {
+        const lineToName = {};
+        Object.entries(assignments).forEach(([key, lineNbr]) => {
+            const [prefix, nbr] = key.split('-');
+            const group = prefix === 'g1' ? GROUP1 : GROUP2;
+            const person = group.find(p => p.nbr === parseInt(nbr));
+            if (person) lineToName[lineNbr] = person.name;
+        });
+        return lineToName;
+    }
+    
+    function renderGroup(group, containerId, prefix) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = group.map(person => {
+            const key = prefix + '-' + person.nbr;
+            const assignedLine = assignments[key] || '';
+            
+            if (isAdmin) {
+                const deleteBtn = assignedLine ? `<button class="sen-delete" onclick="deleteLine('${key}')">&times;</button>` : '<span></span>';
+                return `
+                    <div class="seniority-entry ${assignedLine ? 'assigned' : ''}" id="entry-${key}">
+                        <div class="sen-nbr">${person.nbr}</div>
+                        <div class="sen-name">${person.name}</div>
+                        <input type="text" 
+                               class="sen-input ${assignedLine ? 'filled' : ''}" 
+                               id="input-${key}"
+                               value="${assignedLine}"
+                               placeholder="—"
+                               onchange="assignLine('${key}', this.value)"
+                               onkeydown="handleKeyDown(event, '${key}')">
+                        ${deleteBtn}
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="seniority-entry ${assignedLine ? 'assigned' : ''}" id="entry-${key}">
+                        <div class="sen-nbr">${person.nbr}</div>
+                        <div class="sen-name">${person.name}</div>
+                        <div class="sen-line-display ${assignedLine ? '' : 'empty'}">${assignedLine || '—'}</div>
+                        <span></span>
+                    </div>
+                `;
+            }
+        }).join('');
+    }
+    
+    function renderAllLines() {
+        const container = document.getElementById('allLinesList');
+        const lineToBidder = getLineToBidder();
+        
+        container.innerHTML = ANNUAL_BID.map(line => {
+            const bidder = lineToBidder[line.lineNbr];
+            const isTaken = !!bidder;
+            
+            const lineColor = COLOR_MAP[line.lineColorCode] || '#ddd';
+            const lineTextColor = LIGHT_TEXT_CODES.includes(line.lineColorCode) ? '#fff' : '#000';
+            
+            let dayCells = '';
+            for (let i = 0; i < 12; i++) {
+                const val = line.days[i] || '-';
+                const dayCode = line.dayCodes[i] || 0;
+                const dayColor = COLOR_MAP[dayCode] || '#ddd';
+                const dayTextColor = LIGHT_TEXT_CODES.includes(dayCode) ? '#fff' : '#000';
+                dayCells += `<div class="day-cell" style="background:${dayColor}; color:${dayTextColor};">${val}</div>`;
+            }
+            
+            return `
+                <div class="line-row ${isTaken ? 'taken' : ''}">
+                    <div class="line-nbr">${line.lineNbr}</div>
+                    <div class="line-desc" style="background:${lineColor}; color:${lineTextColor};">${line.lineDesc}</div>
+                    <div class="line-bidder ${isTaken ? 'taken' : 'available'}">${bidder || 'Available'}</div>
+                    ${dayCells}
+                </div>
+            `;
+        }).join('');
+    }
+    
+    function handleKeyDown(event, key) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            assignLine(key, event.target.value);
+            const inputs = document.querySelectorAll('.sen-input');
+            const currentIndex = Array.from(inputs).findIndex(inp => inp.id === 'input-' + key);
+            if (currentIndex < inputs.length - 1) {
+                inputs[currentIndex + 1].focus();
+            }
+        }
+    }
+    
+    function deleteLine(key) {
+        if (!isAdmin) return;
+        delete assignments[key];
+        saveLocal();
+        saveToCloud();
+        renderAll();
+    }
+    
+    function assignLine(key, value) {
+        if (!isAdmin) return;
+        const lineNbr = value.trim();
+        
+        if (lineNbr === '') {
+            delete assignments[key];
+        } else {
+            const line = ANNUAL_BID.find(l => l.lineNbr === lineNbr);
+            if (!line) {
+                alert('Line ' + lineNbr + ' not found!');
+                document.getElementById('input-' + key).value = assignments[key] || '';
+                return;
+            }
+            
+            const existingKey = Object.entries(assignments).find(([k, v]) => v === lineNbr && k !== key);
+            if (existingKey) {
+                const [eKey] = existingKey;
+                const [prefix, nbr] = eKey.split('-');
+                const group = prefix === 'g1' ? GROUP1 : GROUP2;
+                const person = group.find(p => p.nbr === parseInt(nbr));
+                alert('Line ' + lineNbr + ' is already assigned to ' + person.name);
+                document.getElementById('input-' + key).value = assignments[key] || '';
+                return;
+            }
+            
+            assignments[key] = lineNbr;
+        }
+        
+        saveLocal();
+        saveToCloud();
+        renderAll();
+    }
+    
+    function updateStats() {
+        let takenSSOM = 0;
+        let takenSOM = 0;
+        Object.keys(assignments).forEach(key => {
+            if (key.startsWith('g1-')) takenSSOM++;
+            else if (key.startsWith('g2-')) takenSOM++;
+        });
+        document.getElementById('statTakenSSOM').textContent = takenSSOM;
+        document.getElementById('statAvailSSOM').textContent = GROUP1.length - takenSSOM;
+        document.getElementById('statTakenSOM').textContent = takenSOM;
+        document.getElementById('statAvailSOM').textContent = GROUP2.length - takenSOM;
+    }
+    
+    function showLegend() {
+        document.getElementById('legendModal').classList.add('show');
+    }
+    
+    function hideLegend() {
+        document.getElementById('legendModal').classList.remove('show');
+    }
+    
+    function showSetupModal() {
+        document.getElementById('setupModal').classList.add('show');
+        document.getElementById('npointInput').value = '';
+        document.getElementById('npointInput').focus();
+    }
+    
+    function hideSetupModal() {
+        document.getElementById('setupModal').classList.remove('show');
+    }
+    
+    async function setupNpoint() {
+        const inputId = document.getElementById('npointInput').value.trim();
+        
+        if (!inputId) {
+            alert('Please enter the npoint ID from the URL');
+            return;
+        }
+        
+        // Clean the input - handle various formats
+        let cleanId = inputId;
+        
+        // If they pasted full URL like https://api.npoint.io/abc123
+        if (inputId.includes('npoint.io/')) {
+            cleanId = inputId.split('npoint.io/').pop().split('/')[0].split('?')[0];
+        }
+        
+        // If they pasted the www.npoint.io/docs/abc123 format
+        if (inputId.includes('/docs/')) {
+            cleanId = inputId.split('/docs/').pop().split('/')[0].split('?')[0];
+        }
+        
+        // Remove any whitespace or special chars
+        cleanId = cleanId.replace(/[^a-zA-Z0-9]/g, '');
+        
+        console.log('Original input:', inputId);
+        console.log('Cleaned ID:', cleanId);
+        
+        if (!cleanId) {
+            alert('Could not extract a valid ID. Please paste just the ID or the full URL.');
+            return;
+        }
+        
+        NPOINT_ID = cleanId;
+        localStorage.setItem('polish_bid_npoint_id', NPOINT_ID);
+        hideSetupModal();
+        
+        // Test the connection
+        await loadFromCloud();
+        updateNpointDisplay();
+        document.getElementById('setupBtn').style.display = 'none';
+    }
+    
+    function showNpointId() {
+        if (NPOINT_ID) {
+            prompt('npoint ID (share with other devices):', NPOINT_ID);
+        } else if (isAdmin) {
+            showSetupModal();
+        }
+    }
+    
+    function updateNpointDisplay() {
+        const display = document.getElementById('npointIdDisplay');
+        if (NPOINT_ID) {
+            display.textContent = '[ID: ' + NPOINT_ID.substring(0, 8) + '...]';
+            display.title = 'Click to see full ID';
+        } else {
+            display.textContent = isAdmin ? '[Setup Cloud]' : '';
+        }
+    }
+    
+    function clearAll() {
+        if (!isAdmin) return;
+        if (confirm('Clear all assignments? This cannot be undone.')) {
+            assignments = {};
+            saveLocal();
+            saveToCloud();
+            renderAll();
+        }
+    }
+    </script>
+</body>
+</html>

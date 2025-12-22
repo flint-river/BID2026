@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre-Bid Polish Bid 2026-2027</title>
+    <link rel="stylesheet" href="bidding.css">
+</head>
+<body>
+    <div style="background: #16213e; color: #4ecca3; padding: 8px 20px; text-align: center; font-size: 12px; border-bottom: 1px solid #0f3460;">
+        💡 This page works best in Google Chrome
+    </div>
+    <div class="header">
+
+        <div class="header-content">
+            <h1>Pre-Bid Polish Bid 2026-2027</h1>
+            <p>Bid Year: April 1, 2026 - March 31, 2027 | 12-Day Rotating Pattern</p>
+            <a href="https://deltaairlines-my.sharepoint.com/:x:/r/personal/chris_pawlowski_delta_com/Documents/EXCEL%20WORK%20IN%20PROGRESS/Schedules/The%20Polish%20Bid%20Package%20%202026-2027%20(Version%201.0).xlsx?d=wc591e8c5ee294480917d9c4b1849416c&csf=1&web=1&e=J7qgMs" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:12px; padding:10px 20px; background:#217346; color:white; font-size:14px; font-weight:bold; text-decoration:none; border-radius:6px;">📊 Open Excel Spreadsheet (Microsoft 365)</a>
+            <a href="bid_times.html" target="_blank" style="display:inline-block; margin-top:12px; margin-left:10px; padding:10px 20px; background:#c53030; color:white; font-size:14px; font-weight:bold; text-decoration:none; border-radius:6px;">⏰ View Official Bid Times</a>
+            <a href="bid_confirmation.html" target="_blank" style="display:inline-block; margin-top:12px; margin-left:10px; padding:10px 20px; background:#9b59b6; color:white; font-size:14px; font-weight:bold; text-decoration:none; border-radius:6px;">🔒 Bid Confirmations</a>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="stats">
+            <span style="color:#e94560; font-weight:bold; margin-right:5px;">SSOM:</span>
+            <div class="stat">
+                <span class="stat-label">Taken:</span>
+                <span class="stat-value" id="statTakenSSOM">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Avail:</span>
+                <span class="stat-value available" id="statAvailSSOM">14</span>
+            </div>
+            <span style="color:#e94560; font-weight:bold; margin-left:15px; margin-right:5px;">SOM:</span>
+            <div class="stat">
+                <span class="stat-label">Taken:</span>
+                <span class="stat-value" id="statTakenSOM">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Avail:</span>
+                <span class="stat-value available" id="statAvailSOM">81</span>
+            </div>
+            <button class="btn btn-legend" onclick="showLegend()">Legend</button>
+            <button class="btn" onclick="showHolidaySummary()" style="background:#e94560; color:white;">🎄 Holiday Summary</button>
+            <button class="btn" onclick="showSwapCompare()" style="background:#9b59b6; color:white;">🔄 Swap Compare</button>
+            <button class="btn" onclick="toggleFavoritesView()" id="favoritesBtn" style="background:#f0a500; color:#1a1a2e;">⭐ Favorites (<span id="favCount">0</span>)</button>
+            <button class="btn" onclick="showPTOModal()" style="background:#2563eb; color:white;">🏖️ PTO Overlay</button>
+            <a href="swap_builder.html" class="btn" style="background:#9b59b6; color:white; text-decoration:none;">🔄 Swap Builder</a>
+            <span class="mode-indicator viewer" id="modeIndicator">VIEWER</span>
+        </div>
+        <div class="sync-status">
+            <div class="sync-dot" id="syncDot"></div>
+            <span id="syncText">Connecting...</span>
+            <button class="btn" onclick="loadFromCloud()" style="padding:4px 12px; font-size:11px; margin-left:8px; background:#4ecca3; color:#1a1a2e; font-weight:bold;">⟳ Refresh</button>
+            <span style="color:#888; font-size:10px; margin-left:5px;">Auto-refreshes every 5 min | Last: <span id="lastRefresh">--</span></span>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="main-container">
+            <div class="panel">
+                <div class="panel-header">Seniority List</div>
+                <div class="panel-content" id="seniorityPanel">
+                    <div class="entry-header">
+                        <span>#</span>
+                        <span>Name</span>
+                        <span>Line</span>
+                        <span></span>
+                    </div>
+                    <div class="group-title" id="group1Title">SSOM (14)</div>
+                    <div id="group1List"></div>
+                    <div class="group-title" id="group2Title">SOM (82)</div>
+                    <div id="group2List"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">All Lines <span style="font-weight:normal; font-size:11px; color:#888;">(*Click Desc for year calendar)</span></div>
+                <div class="panel-content" id="linesPanel">
+                    <div class="lines-holiday-subheader">
+                        <span class="spacer"></span>
+                        <span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="lines-holiday-subheader">
+                        <span class="spacer"></span>
+                        <span></span><span></span><span></span><span>LABOR</span>
+                        <span>XMAS</span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span>NYD</span>
+                    </div>
+                    <div class="lines-holiday-subheader">
+                        <span class="spacer"></span>
+                        <span></span><span>EAST2</span><span>STPAT</span><span>MOM</span>
+                        <span>EAST1</span><span></span><span>MEMOR</span><span>SUPER</span>
+                        <span></span><span>DAD</span><span>4TH</span><span>THX</span>
+                    </div>
+                    <div class="lines-header">
+                        <span>Line</span>
+                        <span>⭐</span>
+                        <span>Desc*</span>
+                        <span>Bidder</span>
+                        <span>1</span><span>2</span><span>3</span><span>4</span>
+                        <span>5</span><span>6</span><span>7</span><span>8</span>
+                        <span>9</span><span>10</span><span>11</span><span>12</span>
+                    </div>
+                    <div id="allLinesList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>
+            <button class="btn btn-secondary" onclick="clearAll()" id="clearBtn" disabled>Clear All</button>
+            <button class="btn" onclick="showAscentExport()" id="ascentBtn" style="display:none; background:#2563eb; color:white; margin-left:10px;">📤 ASCENT Export</button>
+            <a href="may_balance.html" id="mayBalanceBtn" class="btn" style="display:none; background:#9b59b6; color:white; margin-left:10px; text-decoration:none;">⚖️ May Balance</a>
+            <button class="btn" onclick="undoLastAction()" id="undoBtn" style="display:none; background:#f0a500; color:#1a1a2e; margin-left:10px;">↩️ Undo</button>
+            <button class="btn" onclick="showAuditLog()" id="auditBtn" style="display:none; background:#16213e; color:#4ecca3; border:1px solid #4ecca3; margin-left:10px;">📋 Audit Log</button>
+        </div>
+        <div>
+            <button class="btn btn-admin" onclick="showPasswordModal()" id="adminBtn">Admin Login</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="passwordModal">
+        <div class="password-modal">
+            <h3>🔐 Admin Login</h3>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">Enter password to enable editing</p>
+            <input type="password" id="passwordInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()">
+            <div class="password-error" id="passwordError">Incorrect password</div>
+            <button class="btn btn-primary" onclick="checkPassword()" style="width:100%; padding:12px;">Login</button>
+            <button class="btn btn-secondary" onclick="hidePasswordModal()" style="width:100%; padding:12px; margin-top:10px;">Cancel</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="legendModal" onclick="hideLegend()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="hideLegend()">Close</button>
+            <h3>Legend</h3>
+            <div class="legend-grid">
+
+                <div class="legend-section">
+                    <h4>Bridge Desks</h4>
+                    <div class="legend-item"><span class="legend-code">N</span><span>321NEO</span></div>
+                    <div class="legend-item"><span class="legend-code">O</span><span>717*</span></div>
+                    <div class="legend-item"><span class="legend-code">Q</span><span>B738/B73R/B73J</span></div>
+                    <div class="legend-item"><span class="legend-code">R</span><span>A220</span></div>
+                    <div class="legend-item"><span class="legend-code">S</span><span>B739</span></div>
+                    <div class="legend-item"><span class="legend-code">U</span><span>B763/764</span></div>
+                    <div class="legend-item"><span class="legend-code">V</span><span>A321</span></div>
+                    <div class="legend-item"><span class="legend-code">W</span><span>B757</span></div>
+                    <div class="legend-item"><span class="legend-code">X</span><span>A319/A320</span></div>
+                    <div class="legend-item"><span class="legend-code">Y</span><span>A330/A350</span></div>
+                </div>
+                <div class="legend-section">
+                    <h4>SPT Desks</h4>
+                    <div class="legend-item"><span class="legend-code">C/D/E</span><span>Terminal</span></div>
+                    <div class="legend-item"><span class="legend-code">F</span><span>Routes</span></div>
+                    <div class="legend-item"><span class="legend-code">G</span><span>Enroute</span></div>
+                    <div class="legend-item"><span class="legend-code">H</span><span>Surface</span></div>
+                    <div class="legend-item"><span class="legend-code">J/K</span><span>Regional</span></div>
+                </div>
+                <div class="legend-section">
+                    <h4>SSOM Desks</h4>
+                    <div class="legend-item"><span class="legend-code">A/B</span><span>SSOM SPT</span></div>
+                    <div class="legend-item"><span class="legend-code">M/Z</span><span>SSOM Bridge</span></div>
+                </div>
+                <div class="legend-section">
+                    <h4>2026-2027 Holidays</h4>
+                    <div class="legend-item"><span class="legend-code">Pattern day 1</span><span>Super Bowl (02/14/2027)</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 2</span><span>Easter 2</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 3</span><span>St. Patrick's</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 4</span><span>Labor, Mom</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 5</span><span>Xmas, Easter 1</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 7</span><span>Memorial</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 10</span><span>Father's Day</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 11</span><span>July 4th</span></div>
+                    <div class="legend-item"><span class="legend-code">Pattern day 12</span><span>NYD, Thanksgiving</span></div>
+                </div>
+                <div class="legend-section">
+                    <h4>Status Indicators</h4>
+                    <div class="legend-item"><span class="legend-code">🔒</span><span>Line Confirmed</span></div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #0f3460; font-size: 11px; color: #888;">
+                * May receive other fleets depending on daily workload of other desks
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="calendarModal" onclick="hideCalendar()">
+        <div class="calendar-modal" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 id="calendarTitle" style="margin:0;">Year Calendar</h3>
+                <div>
+                    <button class="btn btn-legend" onclick="toggleCalendarView()" style="margin-right:10px; background:#9b59b6; color:white;">📅 Toggle View</button>
+                    <button class="btn btn-legend" onclick="copyCalendarLink()" style="margin-right:10px;">🔗 Copy Link</button>
+                    <button class="btn" onclick="exportCurrentLineICS()" style="margin-right:10px; background:#4ecca3; color:#1a1a2e;">📥 Export ICS</button>
+                    <button class="btn" onclick="printCurrentLineSummary()" style="margin-right:10px; background:#2563eb; color:white;">📄 Summary</button>
+                    <button class="btn" onclick="printCalendar()" style="margin-right:10px;">🖨️ Print</button>
+                    <button class="modal-close" onclick="hideCalendar()" style="position:relative; top:0; right:0;">Close</button>
+                </div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="traditional-view" id="traditionalView" style="display:none;"></div>
+            <div class="calendar-legend">
+                <span class="calendar-legend-item" style="color:#e94560; background:rgba(233,69,96,0.2); border:1px solid #e94560;">Holiday</span>
+                <span class="calendar-legend-item" style="background:#FF0000; color:#fff; border:1px solid #FF0000;">Balance Adjustment</span>
+                <span class="calendar-legend-item" style="color:#2563eb; background:rgba(37,99,235,0.2); border:2px solid #2563eb;">Your PTO</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="holidaySummaryModal" onclick="hideHolidaySummary()">
+        <div class="modal" style="max-width:1100px; width:95vw;" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="hideHolidaySummary()">Close</button>
+            <h3>🎄 Holiday Summary - Lines with Holidays Off</h3>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">Shows which lines have each holiday off (indicated by -- on that pattern day)</p>
+            <div id="holidaySummaryContent"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="swapCompareModal" onclick="hideSwapCompare()">
+        <div class="modal" style="max-width:1200px; width:95vw; max-height:90vh;" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="hideSwapCompare()">Close</button>
+            <h3>🔄 Swap Compatibility Analyzer</h3>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">Find line pairs for shift swapping (same group only, 8-hour rest rule enforced)</p>
+
+            <!-- Manual Line Comparison -->
+            <div style="background:#0f3460; padding:15px; border-radius:8px; margin-bottom:20px;">
+                <h4 style="color:#4ecca3; margin-bottom:10px;">📊 Manual Line Comparison</h4>
+                <p style="color:#888; font-size:11px; margin-bottom:10px;">Compare up to 5 lines side-by-side throughout the year</p>
+                <div style="display:flex; gap:15px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
+                    <div>
+                        <label style="color:#ccc; font-size:12px; display:block; margin-bottom:5px;">Line A:</label>
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <input type="text" id="lineInputA" placeholder="#" maxlength="2" style="width:40px; padding:8px 4px; border-radius:5px; background:#16213e; color:#4ecca3; border:1px solid #4ecca3; font-size:14px; text-align:center; font-weight:bold;" onkeyup="handleLineInput('A', this.value)" onchange="handleLineInput('A', this.value)">
+                            <div class="custom-dropdown" id="dropdownA">
+                                <div class="dropdown-selected" onclick="toggleDropdown('A')"><span>or Select</span><span style="margin-left:auto;color:#4ecca3;">▼</span></div>
+                                <div class="dropdown-options" id="optionsA"></div>
+                                <input type="hidden" id="manualCompareLineA" value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="color:#ccc; font-size:12px; display:block; margin-bottom:5px;">Line B:</label>
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <input type="text" id="lineInputB" placeholder="#" maxlength="2" style="width:40px; padding:8px 4px; border-radius:5px; background:#16213e; color:#4ecca3; border:1px solid #4ecca3; font-size:14px; text-align:center; font-weight:bold;" onkeyup="handleLineInput('B', this.value)" onchange="handleLineInput('B', this.value)">
+                            <div class="custom-dropdown" id="dropdownB">
+                                <div class="dropdown-selected" onclick="toggleDropdown('B')"><span>or Select</span><span style="margin-left:auto;color:#4ecca3;">▼</span></div>
+                                <div class="dropdown-options" id="optionsB"></div>
+                                <input type="hidden" id="manualCompareLineB" value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="color:#ccc; font-size:12px; display:block; margin-bottom:5px;">Line C:</label>
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <input type="text" id="lineInputC" placeholder="#" maxlength="2" style="width:40px; padding:8px 4px; border-radius:5px; background:#16213e; color:#4ecca3; border:1px solid #4ecca3; font-size:14px; text-align:center; font-weight:bold;" onkeyup="handleLineInput('C', this.value)" onchange="handleLineInput('C', this.value)">
+                            <div class="custom-dropdown" id="dropdownC">
+                                <div class="dropdown-selected" onclick="toggleDropdown('C')"><span>(optional)</span><span style="margin-left:auto;color:#4ecca3;">▼</span></div>
+                                <div class="dropdown-options" id="optionsC"></div>
+                                <input type="hidden" id="manualCompareLineC" value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="color:#ccc; font-size:12px; display:block; margin-bottom:5px;">Line D:</label>
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <input type="text" id="lineInputD" placeholder="#" maxlength="2" style="width:40px; padding:8px 4px; border-radius:5px; background:#16213e; color:#4ecca3; border:1px solid #4ecca3; font-size:14px; text-align:center; font-weight:bold;" onkeyup="handleLineInput('D', this.value)" onchange="handleLineInput('D', this.value)">
+                            <div class="custom-dropdown" id="dropdownD">
+                                <div class="dropdown-selected" onclick="toggleDropdown('D')"><span>(optional)</span><span style="margin-left:auto;color:#4ecca3;">▼</span></div>
+                                <div class="dropdown-options" id="optionsD"></div>
+                                <input type="hidden" id="manualCompareLineD" value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="color:#ccc; font-size:12px; display:block; margin-bottom:5px;">Line E:</label>
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <input type="text" id="lineInputE" placeholder="#" maxlength="2" style="width:40px; padding:8px 4px; border-radius:5px; background:#16213e; color:#4ecca3; border:1px solid #4ecca3; font-size:14px; text-align:center; font-weight:bold;" onkeyup="handleLineInput('E', this.value)" onchange="handleLineInput('E', this.value)">
+                            <div class="custom-dropdown" id="dropdownE">
+                                <div class="dropdown-selected" onclick="toggleDropdown('E')"><span>(optional)</span><span style="margin-left:auto;color:#4ecca3;">▼</span></div>
+                                <div class="dropdown-options" id="optionsE"></div>
+                                <input type="hidden" id="manualCompareLineE" value="">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="showManualComparison()" style="background:#e94560; color:#fff; padding:8px 20px;">Compare Lines</button>
+                    <button class="btn" onclick="clearManualComparison()" style="background:#888; color:#fff; padding:8px 20px;">Clear</button>
+                </div>
+                <div id="manualCompareView" style="display:none; margin-top:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h4 style="color:#4ecca3; margin:0;">Comparison View</h4>
+                        <button class="btn" onclick="printManualComparison()" style="background:#9b59b6; color:#fff; padding:5px 15px; font-size:12px;">🖨️ Print</button>
+                    </div>
+                    <div id="manualCompareContent" style="background:#16213e; padding:10px; border-radius:5px; overflow-x:auto;"></div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+                <div style="display:flex; gap:10px;">
+                    <button class="btn" onclick="showSwapCategory('fiveSevenOff')" id="btn-fiveSevenOff" style="background:#4ecca3; color:#1a1a2e;">5 On / 7 Off</button>
+                    <button class="btn" onclick="showSwapCategory('twoDayPickup')" id="btn-twoDayPickup" style="background:#0f3460; color:#eee;">2-Day Pickup Swap</button>
+                </div>
+                <button class="btn" onclick="printSwapCompare()" style="background:#9b59b6; color:#fff; padding:5px 15px; font-size:12px;">🖨️ Print</button>
+            </div>
+            <div id="swapCompareContent"></div>
+        </div>
+    </div>
+
+    <!-- ASCENT Export Modal -->
+    <div class="modal-overlay" id="ascentExportModal" onclick="hideAscentExport()">
+        <div class="modal" style="max-width:900px; width:95vw; max-height:90vh;" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="hideAscentExport()">Close</button>
+            <h3>📤 ASCENT Schedule Export</h3>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">
+                Export bid assignments with full 365-day schedules (Apr 1, 2026 - Mar 31, 2027).
+                <br><strong style="color:#4ecca3;">Paste employee data below — it stays in your browser only, never saved to web.</strong>
+            </p>
+            
+            <!-- Step 1: Paste Employee Data -->
+            <div style="background:#0f3460; padding:15px; border-radius:8px; margin-bottom:15px;">
+                <h4 style="color:#4ecca3; margin-bottom:10px;">Step 1: Paste Employee Data</h4>
+                <p style="color:#888; font-size:11px; margin-bottom:10px;">
+                    Paste tab-separated data with columns: ABBREVIATED_NAME, FULL_NAME, WORKER_ID, WORKER_TYPE, HIRE_TYPE
+                </p>
+                <textarea id="employeeDataPaste" rows="6" placeholder="ABBREVIATED_NAME	FULL_NAME	WORKER_ID	WORKER_TYPE	HIRE_TYPE
+PAWL, CHR	Pawlowski, Chris	084042200	SSOM	Full Time
+GWIN, BRI	Gwinn, Brian	095403300	SOM	Full Time
+..."
+                    style="width:100%; background:#16213e; color:#fff; border:1px solid #4ecca3; border-radius:5px; padding:10px; font-family:monospace; font-size:11px; resize:vertical;"></textarea>
+                <div style="display:flex; gap:10px; align-items:center; margin-top:10px;">
+                    <button class="btn" onclick="parseEmployeeData()" style="background:#4ecca3; color:#1a1a2e;">Parse Data</button>
+                    <span id="employeeParseStatus" style="color:#888; font-size:12px;"></span>
+                </div>
+            </div>
+            
+            <!-- Step 2: Generate Export -->
+            <div style="background:#0f3460; padding:15px; border-radius:8px; margin-bottom:15px;">
+                <h4 style="color:#4ecca3; margin-bottom:10px;">Step 2: Generate ASCENT Export</h4>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <button class="btn" onclick="generateAscentExport()" id="generateExportBtn" disabled 
+                            style="background:#888; color:#fff;">Generate Preview</button>
+                    <button class="btn" onclick="downloadAscentExport()" id="downloadExportBtn" disabled 
+                            style="background:#888; color:#fff;">⬇️ Download CSV File</button>
+                </div>
+            </div>
+            
+            <!-- Preview Area -->
+            <div id="ascentExportPreview" style="display:none;">
+                <h4 style="color:#4ecca3; margin-bottom:10px;">Export Preview</h4>
+                <div style="display:flex; gap:15px; margin-bottom:10px; font-size:12px;">
+                    <span style="color:#4ecca3;">✓ Matched: <span id="matchedCount">0</span></span>
+                    <span style="color:#e94560;">✗ Unmatched: <span id="unmatchedCount">0</span></span>
+                    <span style="color:#888;">Total Assignments: <span id="totalAssignments">0</span></span>
+                </div>
+                <div id="unmatchedWarning" style="display:none; background:#e9456033; border:1px solid #e94560; padding:10px; border-radius:5px; margin-bottom:10px;">
+                    <strong style="color:#e94560;">⚠️ Unmatched Names:</strong>
+                    <p style="color:#ccc; font-size:11px; margin-top:5px;">These abbreviated names weren't found in your pasted data:</p>
+                    <div id="unmatchedList" style="color:#e94560; font-size:12px; font-family:monospace; margin-top:5px;"></div>
+                </div>
+                <p style="color:#888; font-size:11px; margin-bottom:5px;">Preview (showing first 2 days of 365):</p>
+                <div style="max-height:300px; overflow-y:auto; background:#16213e; border-radius:5px; padding:10px;">
+                    <table style="width:100%; font-size:11px; border-collapse:collapse;">
+                        <thead>
+                            <tr style="color:#4ecca3; text-align:left; border-bottom:1px solid #0f3460;">
+                                <th style="padding:5px;">Status</th>
+                                <th style="padding:5px;">Worker</th>
+                                <th style="padding:5px;">Worker ID</th>
+                                <th style="padding:5px;">Type</th>
+                                <th style="padding:5px;">Line#</th>
+                                <th style="padding:5px;">Apr 1</th>
+                                <th style="padding:5px;">Apr 2</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ascentExportTable"></tbody>
+                    </table>
+                </div>
+                <p style="color:#666; font-size:10px; margin-top:10px;">
+                    Full export includes: Header block + 365 date columns (Apr 1, 2026 - Mar 31, 2027)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PTO Overlay Modal -->
+    <div class="modal-overlay" id="ptoModal" onclick="hidePTOModal()">
+        <div class="modal" style="max-width:600px;" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="hidePTOModal()">Close</button>
+            <h3>🏖️ PTO Overlay</h3>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">
+                Enter your planned PTO dates to see conflicts with each line. Data is stored locally in your browser.
+            </p>
+            
+            <div style="background:#0f3460; padding:15px; border-radius:8px; margin-bottom:15px;">
+                <h4 style="color:#4ecca3; margin-bottom:10px;">Add PTO Range</h4>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+                    <div>
+                        <label style="color:#888; font-size:11px; display:block; margin-bottom:5px;">Start Date:</label>
+                        <input type="date" id="ptoStartDate" min="2026-04-01" max="2027-03-31" 
+                            style="padding:8px; border-radius:5px; background:#16213e; color:#fff; border:1px solid #4ecca3;">
+                    </div>
+                    <div>
+                        <label style="color:#888; font-size:11px; display:block; margin-bottom:5px;">End Date:</label>
+                        <input type="date" id="ptoEndDate" min="2026-04-01" max="2027-03-31"
+                            style="padding:8px; border-radius:5px; background:#16213e; color:#fff; border:1px solid #4ecca3;">
+                    </div>
+                    <button class="btn" onclick="addPTORange()" style="background:#4ecca3; color:#1a1a2e;">+ Add</button>
+                </div>
+            </div>
+            
+            <div style="background:#0f3460; padding:15px; border-radius:8px; margin-bottom:15px;">
+                <h4 style="color:#4ecca3; margin-bottom:10px;">Your PTO Dates</h4>
+                <div id="ptoDatesList" style="max-height:150px; overflow-y:auto;">
+                    <p style="color:#888; font-size:12px;">No PTO dates added yet.</p>
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:10px; justify-content:space-between;">
+                <div>
+                    <span style="color:#888; font-size:11px;">PTO days will be highlighted in <span style="color:#2563eb; font-weight:bold;">blue</span> on calendars</span>
+                </div>
+                <div>
+                    <button class="btn" onclick="clearAllPTO()" style="background:#e94560; color:white;">Clear All PTO</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Log Modal -->
+    <div class="modal-overlay" id="auditLogModal" onclick="hideAuditLog()">
+        <div class="modal" style="max-width:800px; max-height:80vh;" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="hideAuditLog()">Close</button>
+            <h3>📋 Bid Audit Log</h3>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">
+                History of all bid assignments and changes.
+            </p>
+            
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="btn" onclick="refreshAuditLog()" style="background:#4ecca3; color:#1a1a2e;">⟳ Refresh</button>
+                <button class="btn" onclick="exportAuditLog()" style="background:#2563eb; color:white;">⬇️ Export CSV</button>
+            </div>
+            
+            <div style="background:#0f3460; padding:15px; border-radius:8px; max-height:400px; overflow-y:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr style="color:#4ecca3; text-align:left; border-bottom:2px solid #16213e; position:sticky; top:0; background:#0f3460;">
+                            <th style="padding:8px;">Time</th>
+                            <th style="padding:8px;">Action</th>
+                            <th style="padding:8px;">Person</th>
+                            <th style="padding:8px;">Line</th>
+                            <th style="padding:8px;">By</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditLogTable">
+                        <tr><td colspan="5" style="padding:20px; text-align:center; color:#888;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<!-- Firebase Configuration -->
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDD7V8bTZK8q7ADvR7rx56n9UDZs5O7PjU",
+  authDomain: "bid2026-58308.firebaseapp.com",
+  databaseURL: "https://bid2026-58308-default-rtdb.firebaseio.com",
+  projectId: "bid2026-58308",
+  storageBucket: "bid2026-58308.firebasestorage.app",
+  messagingSenderId: "312871238158",
+  appId: "1:312871238158:web:b880eea86e983d1dac9a5f"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+</script>
+
+<!-- Your JavaScript -->
+<script src="may_overrides.js"></script>
+<script src="bidding_final.js"></script>
+<script src="calendar_generator.js"></script>
+</body>
+</html>

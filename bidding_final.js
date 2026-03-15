@@ -4850,12 +4850,16 @@ const ANNUAL_BID = ${JSON.stringify(setupData.linePatterns, null, 2)};
         const banner = document.getElementById('escalationBanner');
         const details = document.getElementById('escalationBannerDetails');
         
+        // Safety check - ensure arrays exist
+        const ssomVacant = vacantLines.ssom || [];
+        const somVacant = vacantLines.som || [];
+        
         let vacantText = [];
-        if (vacantLines.ssom.length > 0) {
-            vacantText.push(`SSOM Lines: ${vacantLines.ssom.join(', ')}`);
+        if (ssomVacant.length > 0) {
+            vacantText.push(`SSOM Lines: ${ssomVacant.join(', ')}`);
         }
-        if (vacantLines.som.length > 0) {
-            vacantText.push(`SOM Lines: ${vacantLines.som.join(', ')}`);
+        if (somVacant.length > 0) {
+            vacantText.push(`SOM Lines: ${somVacant.join(', ')}`);
         }
         
         let detailsHtml = `<div>Vacant: ${vacantText.join(' | ')}</div>`;

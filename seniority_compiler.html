@@ -185,6 +185,7 @@
                     <ol>
                         <li>Go to the <strong>PAFCA website</strong> and download the <strong>Excel version</strong> of the seniority list</li>
                         <li>Open the Excel file and go to the <strong>"Office Seniority"</strong> tab</li>
+                        <li><strong style="color:#f39c12;">⚠️ IMPORTANT:</strong> Unhide the <strong>PPR column</strong> (Column D) - this contains Worker IDs needed for ASCENT export</li>
                         <li>Select <strong>ALL data</strong> (Ctrl+A) including the header row</li>
                         <li>Copy (Ctrl+C) and paste (Ctrl+V) into the box below</li>
                     </ol>
@@ -346,12 +347,13 @@
             const lines = rawData.split('\n');
             if (lines.length < 3) { alert('Not enough data.'); return; }
             
-            let headerRowIdx = -1, nameIdx = -1, titleIdx = -1, seniorityIdx = -1;
+            let headerRowIdx = -1, nameIdx = -1, titleIdx = -1, seniorityIdx = -1, pprIdx = -1;
             for (let i = 0; i < Math.min(5, lines.length); i++) {
                 const cols = lines[i].split('\t');
                 const nIdx = cols.findIndex(h => h.trim().toUpperCase() === 'NAME');
                 const tIdx = cols.findIndex(h => h.trim().toUpperCase() === 'TITLE');
-                if (nIdx !== -1 && tIdx !== -1) { headerRowIdx = i; nameIdx = nIdx; titleIdx = tIdx; seniorityIdx = 0; break; }
+                const pIdx = cols.findIndex(h => h.trim().toUpperCase() === 'PPR');
+                if (nIdx !== -1 && tIdx !== -1) { headerRowIdx = i; nameIdx = nIdx; titleIdx = tIdx; seniorityIdx = 0; pprIdx = pIdx; break; }
             }
             if (headerRowIdx === -1) { alert('Could not find NAME or TITLE columns.'); return; }
             
@@ -362,9 +364,10 @@
                 const senNum = cols[seniorityIdx] ? cols[seniorityIdx].trim() : String(i - headerRowIdx);
                 const fullName = cols[nameIdx] ? cols[nameIdx].trim() : '';
                 const title = cols[titleIdx] ? cols[titleIdx].trim().toUpperCase() : '';
+                const workerId = (pprIdx !== -1 && cols[pprIdx]) ? cols[pprIdx].trim() : '';
                 if (!fullName || fullName === '' || fullName.toUpperCase() === 'NAME') continue;
                 if (senNum && isNaN(parseInt(senNum)) && !senNum.includes('V')) continue;
-                newPafcaData.push({ seniorityNum: senNum, fullName, pafcaTitle: title, abbreviated: abbreviateName(fullName) });
+                newPafcaData.push({ seniorityNum: senNum, fullName, pafcaTitle: title, abbreviated: abbreviateName(fullName), workerId });
             }
             if (newPafcaData.length === 0) { alert('No valid data found.'); return; }
             
@@ -391,6 +394,7 @@
                             originalTitle: pafca.pafcaTitle,
                             title: previous.title, // Keep user's title for now, they can change it
                             abbreviated: pafca.abbreviated,
+                            workerId: pafca.workerId || previous.workerId || '',
                             isVacancy: false,
                             status: 'conflict'
                         };
@@ -411,6 +415,7 @@
                             originalTitle: pafca.pafcaTitle,
                             title: previous.title,
                             abbreviated: pafca.abbreviated,
+                            workerId: pafca.workerId || previous.workerId || '',
                             isVacancy: false,
                             status: 'matched'
                         });
@@ -426,6 +431,7 @@
                         originalTitle: pafca.pafcaTitle,
                         title: pafca.pafcaTitle,
                         abbreviated: pafca.abbreviated,
+                        workerId: pafca.workerId || '',
                         isVacancy: false,
                         status: 'new'
                     });

@@ -341,34 +341,23 @@
                     <h4 style="color:#f0a500; margin-bottom:10px;">🎯 WHAT THIS DOES:</h4>
                     <p style="margin-bottom:15px;">Creates a CSV file that ASCENT can import with everyone's work schedule for the entire bid year (Apr 1, 2026 - Mar 31, 2027).</p>
                     
-                    <h4 style="color:#f0a500; margin-bottom:10px;">📝 BEFORE YOU START - GET EMPLOYEE DATA:</h4>
-                    <ol style="margin-left:20px; margin-bottom:15px;">
-                        <li style="margin-bottom:8px;"><strong>Open ASCENT</strong> or your employee database</li>
-                        <li style="margin-bottom:8px;"><strong>Export/copy a list</strong> with these 5 columns (tab-separated):
-                            <ul style="margin-left:20px; margin-top:5px; list-style-type:disc;">
-                                <li><span style="color:#4ecca3;">ABBREVIATED_NAME</span> - e.g., "PAWL, CHR" (must match bid program format)</li>
-                                <li><span style="color:#4ecca3;">FULL_NAME</span> - e.g., "Pawlowski, Chris"</li>
-                                <li><span style="color:#4ecca3;">WORKER_ID</span> - e.g., "084042200"</li>
-                                <li><span style="color:#4ecca3;">WORKER_TYPE</span> - e.g., "SSOM" or "SOM"</li>
-                                <li><span style="color:#4ecca3;">HIRE_TYPE</span> - e.g., "Full Time"</li>
-                            </ul>
-                        </li>
-                    </ol>
+                    <h4 style="color:#f0a500; margin-bottom:10px;">📝 BEFORE YOU START:</h4>
+                    <p style="margin-bottom:15px;">You need a <strong>seniority_work JSON file</strong> from the Seniority Compiler. This file contains the PPR (Worker IDs) from the PAFCA spreadsheet.</p>
+                    <p style="margin-bottom:15px; color:#f39c12;"><strong>⚠️ Important:</strong> Make sure the PPR column is visible (unhidden) in the PAFCA Excel file before pasting into the Seniority Compiler!</p>
                     
                     <h4 style="color:#f0a500; margin-bottom:10px;">🚀 EXPORT STEPS:</h4>
                     <ol style="margin-left:20px; margin-bottom:15px;">
-                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 1:</strong> Paste your employee data (from above) into the text box below</li>
-                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 2:</strong> Click <strong>"Parse Data"</strong> button - it will show how many employees were found</li>
-                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 3:</strong> Click <strong>"Generate Preview"</strong> button - this creates the export and shows a preview</li>
-                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 4:</strong> Check for any <span style="color:#e94560;">red "Unmatched Names"</span> warnings - these are people in the bid who weren't found in your pasted data (typos or missing employees)</li>
-                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 5:</strong> Click <strong>"Download CSV File"</strong> - saves to your Downloads folder</li>
-                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 6:</strong> Import the CSV file into ASCENT</li>
+                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 1:</strong> Click <strong>"Load Seniority JSON"</strong> and select your seniority_work file</li>
+                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 2:</strong> Click <strong>"Generate Preview"</strong> - this creates the export and shows a preview</li>
+                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 3:</strong> Check for any <span style="color:#e94560;">red "Unmatched Names"</span> or <span style="color:#f39c12;">"Missing Worker ID"</span> warnings</li>
+                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 4:</strong> Click <strong>"Download CSV File"</strong> - saves to your Downloads folder</li>
+                        <li style="margin-bottom:8px;"><strong style="color:#4ecca3;">STEP 5:</strong> Import the CSV file into ASCENT</li>
                     </ol>
                     
                     <h4 style="color:#f0a500; margin-bottom:10px;">⚠️ TROUBLESHOOTING:</h4>
                     <ul style="margin-left:20px; list-style-type:disc;">
-                        <li style="margin-bottom:5px;"><strong>Unmatched names?</strong> The abbreviated name in employee data must EXACTLY match the bid program (e.g., "PAWL, CHR" not "PAWL,CHR" or "PAWL, CHRIS")</li>
-                        <li style="margin-bottom:5px;"><strong>Wrong columns?</strong> Make sure data is tab-separated (copy from Excel/ASCENT usually works)</li>
+                        <li style="margin-bottom:5px;"><strong>Missing Worker IDs?</strong> Re-run the Seniority Compiler with the PPR column visible in the PAFCA Excel file</li>
+                        <li style="margin-bottom:5px;"><strong>Unmatched names?</strong> The abbreviated name must match exactly between the JSON and the bid assignments</li>
                         <li style="margin-bottom:5px;"><strong>Missing people?</strong> Only people with bid assignments will be in the export</li>
                     </ul>
                 </div>
@@ -376,22 +365,20 @@
             
             <p style="color:#888; font-size:12px; margin-bottom:15px;">
                 Export bid assignments with full 365-day schedules (Apr 1, 2026 - Mar 31, 2027).
-                <br><strong style="color:#4ecca3;">Paste employee data below — it stays in your browser only, never saved to web.</strong>
+                <br><strong style="color:#4ecca3;">Load your seniority JSON file — it stays in your browser only, never saved to web.</strong>
             </p>
             
-            <!-- Step 1: Paste Employee Data -->
+            <!-- Step 1: Load Seniority JSON -->
             <div style="background:#0f3460; padding:15px; border-radius:8px; margin-bottom:15px;">
-                <h4 style="color:#4ecca3; margin-bottom:10px;">Step 1: Paste Employee Data</h4>
+                <h4 style="color:#4ecca3; margin-bottom:10px;">Step 1: Load Seniority Work File</h4>
                 <p style="color:#888; font-size:11px; margin-bottom:10px;">
-                    Paste tab-separated data with columns: ABBREVIATED_NAME, FULL_NAME, WORKER_ID, WORKER_TYPE, HIRE_TYPE
+                    Load your seniority_work JSON file from the Seniority Compiler. This file contains the Worker IDs (PPR) needed for ASCENT.
                 </p>
-                <textarea id="employeeDataPaste" rows="6" placeholder="ABBREVIATED_NAME	FULL_NAME	WORKER_ID	WORKER_TYPE	HIRE_TYPE
-PAWL, CHR	Pawlowski, Chris	084042200	SSOM	Full Time
-GWIN, BRI	Gwinn, Brian	095403300	SOM	Full Time
-..."
-                    style="width:100%; background:#16213e; color:#fff; border:1px solid #4ecca3; border-radius:5px; padding:10px; font-family:monospace; font-size:11px; resize:vertical;"></textarea>
-                <div style="display:flex; gap:10px; align-items:center; margin-top:10px;">
-                    <button class="btn" onclick="parseEmployeeData()" style="background:#4ecca3; color:#1a1a2e;">Parse Data</button>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <label class="btn" style="background:#9b59b6; color:white; cursor:pointer;">
+                        📂 Load Seniority JSON
+                        <input type="file" id="ascentJsonInput" accept=".json" onchange="loadAscentJson(event)" style="display:none;">
+                    </label>
                     <span id="employeeParseStatus" style="color:#888; font-size:12px;"></span>
                 </div>
             </div>

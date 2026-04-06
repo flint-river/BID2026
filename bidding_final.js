@@ -2822,65 +2822,83 @@ function isLineConfirmed(lineNbr) {
         document.getElementById('ascentExportModal').classList.remove('show');
     }
     
-    function parseEmployeeData() {
-        const textArea = document.getElementById('employeeDataPaste');
+    function loadAscentJson(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
         const statusEl = document.getElementById('employeeParseStatus');
-        const text = textArea.value.trim();
+        statusEl.textContent = 'Loading...';
+        statusEl.style.color = '#f39c12';
         
-        if (!text) {
-            statusEl.textContent = '⚠️ Please paste employee data';
-            statusEl.style.color = '#e94560';
-            return;
-        }
-        
-        try {
-            const lines = text.split(/\r?\n/).filter(line => line.trim());
-            
-            // Check if first line looks like a header
-            const firstLine = lines[0].toUpperCase();
-            const startIdx = (firstLine.includes('ABBREVIATED') || firstLine.includes('NAME') || firstLine.includes('WORKER')) ? 1 : 0;
-            
-            employeeData = {};
-            let count = 0;
-            
-            for (let i = startIdx; i < lines.length; i++) {
-                const parts = lines[i].split('\t');
-                if (parts.length >= 3) {
-                    const abbrevName = parts[0].trim();
-                    const fullName = parts[1].trim();
-                    const workerId = parts[2].trim();
-                    const workerType = parts[3] ? parts[3].trim().replace('-', '') : 'SOM'; // SOM-QA -> SOMQA
-                    const hireType = parts[4] ? parts[4].trim() : 'Full Time';
-                    
-                    if (abbrevName && fullName && workerId) {
-                        employeeData[abbrevName] = {
-                            name: fullName,
-                            workerId: workerId,
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const jsonData = JSON.parse(e.target.result);
+                
+                if (!jsonData.data || !Array.isArray(jsonData.data)) {
+                    throw new Error('Invalid JSON format - expected seniority_work file');
+                }
+                
+                employeeData = {};
+                let count = 0;
+                let missingWorkerIdCount = 0;
+                
+                jsonData.data.forEach(person => {
+                    if (person.abbreviated && person.fullName) {
+                        // Determine worker type from title
+                        let workerType = 'FS';
+                        if (person.title) {
+                            const title = person.title.toUpperCase().replace('-', '');
+                            if (['SSOM', 'SOM', 'SOMQA', 'FS', 'SFSI', 'SFSD', 'LCD', 'AFS'].includes(title)) {
+                                workerType = title;
+                            } else if (title.includes('SOM')) {
+                                workerType = 'SOM';
+                            } else if (title.includes('SSOM')) {
+                                workerType = 'SSOM';
+                            }
+                        }
+                        
+                        employeeData[person.abbreviated] = {
+                            name: person.fullName,
+                            workerId: person.workerId || '',
                             workerType: workerType,
-                            hireType: hireType
+                            hireType: 'Full Time'
                         };
                         count++;
+                        
+                        if (!person.workerId) {
+                            missingWorkerIdCount++;
+                        }
                     }
+                });
+                
+                if (count === 0) {
+                    statusEl.textContent = '⚠️ No valid records found';
+                    statusEl.style.color = '#e94560';
+                    return;
                 }
-            }
-            
-            if (count === 0) {
-                statusEl.textContent = '⚠️ No valid rows found. Check tab separation.';
+                
+                let statusText = `✓ Loaded ${count} employees from ${file.name}`;
+                if (missingWorkerIdCount > 0) {
+                    statusText += ` (⚠️ ${missingWorkerIdCount} missing Worker IDs)`;
+                    statusEl.style.color = '#f39c12';
+                } else {
+                    statusEl.style.color = '#4ecca3';
+                }
+                statusEl.textContent = statusText;
+                
+                // Enable generate button
+                document.getElementById('generateExportBtn').disabled = false;
+                document.getElementById('generateExportBtn').style.background = '#4ecca3';
+                
+            } catch (err) {
+                statusEl.textContent = '⚠️ Error: ' + err.message;
                 statusEl.style.color = '#e94560';
-                return;
             }
             
-            statusEl.textContent = `✓ Parsed ${count} employees`;
-            statusEl.style.color = '#4ecca3';
-            
-            // Enable generate button
-            document.getElementById('generateExportBtn').disabled = false;
-            document.getElementById('generateExportBtn').style.background = '#4ecca3';
-            
-        } catch (err) {
-            statusEl.textContent = '⚠️ Error parsing data: ' + err.message;
-            statusEl.style.color = '#e94560';
-        }
+            event.target.value = ''; // Reset file input
+        };
+        reader.readAsText(file);
     }
     
     // Helper to convert "Last, First" to "First Last" format
